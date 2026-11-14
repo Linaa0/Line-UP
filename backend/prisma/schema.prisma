@@ -1,0 +1,14 @@
+// Line-Up database schema.
+// Models are intentionally not defined yet — they will be designed feature by
+// feature (see docs/DATABASE.md and docs/IMPLEMENTATION_ROADMAP.md).
+// The connection URL is configured in prisma.config.ts (DATABASE_URL).
+
+generator client {
+  provider     = "prisma-client"
+  output       = "../src/generated/prisma"
+  moduleFormat = "esm"
+}
+
+datasource db {
+  provider = "postgresql"
+}
