@@ -1,0 +1,45 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><link rel="stylesheet" href="shared.css">
+<style>
+  .row { padding: 11px 14px; }
+  .section-label { margin-top: 14px; }
+  .lang { padding: 12px 14px; }
+</style></head>
+<body><div class="device">
+  <div class="status"></div>
+  <div class="header">
+    <div class="icon-btn"><i data-i="chevron-left"></i></div>
+    <h1>Settings</h1>
+    <div class="spacer"></div>
+  </div>
+  <div class="content">
+    <div class="section-label" style="margin-top:4px"><span>Notifications</span></div>
+    <div class="card">
+      <div class="row"><div class="ic"><i data-i="bus"></i></div><div class="grow"><div class="t">Bus arrival alerts</div><div class="s">When your bus is 5 min away</div></div><div class="toggle"></div></div>
+      <div class="row"><div class="ic"><i data-i="users"></i></div><div class="grow"><div class="t">Queue updates</div><div class="s">Your position and boarding call</div></div><div class="toggle"></div></div>
+      <div class="row"><div class="ic"><i data-i="file"></i></div><div class="grow"><div class="t">Payment receipts</div></div><div class="toggle"></div></div>
+      <div class="row"><div class="ic"><i data-i="gift"></i></div><div class="grow"><div class="t">Offers &amp; news</div></div><div class="toggle off"></div></div>
+    </div>
+
+    <div class="section-label"><span>Language</span></div>
+    <div class="card lang">
+      <div class="segmented"><div>Kinyarwanda</div><div class="on">English</div><div>Français</div></div>
+    </div>
+
+    <div class="section-label"><span>Security</span></div>
+    <div class="card">
+      <div class="row"><div class="ic"><i data-i="lock"></i></div><div class="grow"><div class="t">Change password</div></div><i data-i="chevron-right"></i></div>
+      <div class="row"><div class="ic"><i data-i="phone2"></i></div><div class="grow"><div class="t">Biometric login</div><div class="s">Use fingerprint or Face ID</div></div><div class="toggle"></div></div>
+    </div>
+
+    <div class="section-label"><span>Privacy &amp; data</span></div>
+    <div class="card">
+      <div class="row"><div class="ic"><i data-i="pin"></i></div><div class="grow"><div class="t">Location access</div><div class="s">While using the app</div></div><i data-i="chevron-right"></i></div>
+      <div class="row"><div class="ic red"><i data-i="trash"></i></div><div class="grow"><div class="t" style="color:var(--danger)">Delete account</div></div><i data-i="chevron-right"></i></div>
+    </div>
+  </div>
+  <div class="home-indicator"></div>
+</div>
+<script src="icons.js"></script>
+<script>document.querySelectorAll('.row > svg:last-child').forEach(s => s.classList.add('chev'));</script>
+</body></html>

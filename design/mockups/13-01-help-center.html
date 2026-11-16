@@ -1,0 +1,63 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><link rel="stylesheet" href="shared.css">
+<style>
+  .contact { display: flex; gap: 10px; }
+  .contact .card { flex: 1; padding: 14px; }
+  .contact .t { font-size: 14px; font-weight: 700; margin-top: 10px; }
+  .contact .s { font-size: 12px; color: var(--text-2); margin-top: 2px; }
+  .contact .primary { background: var(--forest-900); border-color: var(--forest-900); color: #fff; }
+  .contact .primary .s { color: rgba(255,255,255,.7); }
+  .contact .primary .ic { background: rgba(112,251,190,.16); color: var(--mint); }
+  .topics { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .topic { padding: 12px; display: flex; gap: 10px; align-items: center; font-size: 13.5px; font-weight: 600; }
+  .topic .ic { width: 34px; height: 34px; border-radius: 10px; }
+  .topic .ic svg { width: 17px; height: 17px; }
+  .faq { padding: 13px 14px; font-size: 14px; font-weight: 600; display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+  .faq + .faq { border-top: 1px solid #eef3f0; }
+  .faq svg { width: 18px; height: 18px; color: #9aa8a1; flex: none; }
+  .faq.open { flex-wrap: wrap; }
+  .faq.open p { flex-basis: 100%; font-size: 12.5px; font-weight: 400; color: var(--text-2); line-height: 1.5; }
+  .sos { margin-top: 12px; display: flex; align-items: center; gap: 12px; padding: 12px 14px; border-radius: 16px; background: var(--danger-50); border: 1px solid #f8d7d7; }
+  .sos .t { font-size: 13.5px; font-weight: 700; color: #991b1b; }
+  .sos .s { font-size: 12px; color: #b45353; }
+  .sos .call { white-space: nowrap; margin-left: auto; background: var(--danger); color: #fff; font-weight: 700; font-size: 13px; padding: 8px 14px; border-radius: 999px; }
+</style></head>
+<body><div class="device">
+  <div class="status"></div>
+  <div class="header">
+    <div class="icon-btn"><i data-i="chevron-left"></i></div>
+    <h1>Help Center</h1>
+    <div class="spacer"></div>
+  </div>
+  <div class="content">
+    <div class="input" style="margin-bottom:14px"><i data-i="search"></i><span class="ph">Search tickets, payments, queues…</span></div>
+    <div class="contact">
+      <div class="card primary"><div class="ic"><i data-i="headset"></i></div><div class="t">Call an agent</div><div class="s">24/7 · Free from MTN &amp; Airtel</div></div>
+      <div class="card"><div class="ic"><i data-i="chat"></i></div><div class="t">Live chat</div><div class="s">Replies in ~2 min</div></div>
+    </div>
+
+    <div class="section-label"><span>Browse topics</span></div>
+    <div class="topics">
+      <div class="card topic"><div class="ic"><i data-i="qr"></i></div>Tickets &amp; QR</div>
+      <div class="card topic"><div class="ic"><i data-i="wallet"></i></div>Payments</div>
+      <div class="card topic"><div class="ic"><i data-i="users"></i></div>Queues</div>
+      <div class="card topic"><div class="ic"><i data-i="user"></i></div>My account</div>
+    </div>
+
+    <div class="section-label"><span>Popular questions</span></div>
+    <div class="card">
+      <div class="faq open">I missed my bus. Can I get a refund?<i data-i="chevron-down" style="transform:rotate(180deg)"></i>
+        <p>Unused tickets can be refunded to your MoMo or Airtel account within 2 hours of purchase. Open the ticket and tap “Request refund”.</p></div>
+      <div class="faq">My payment went through but no ticket<i data-i="chevron-right"></i></div>
+      <div class="faq">How does the virtual queue work?<i data-i="chevron-right"></i></div>
+    </div>
+
+    <div class="sos">
+      <div class="ic red round"><i data-i="alert"></i></div>
+      <div><div class="t">Emergency on a bus?</div><div class="s">Contact Rwanda emergency services</div></div>
+      <div class="call">Call 112</div>
+    </div>
+  </div>
+  <div class="home-indicator"></div>
+</div>
+<script src="icons.js"></script></body></html>

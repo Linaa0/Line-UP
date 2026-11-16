@@ -1,0 +1,49 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><link rel="stylesheet" href="shared.css">
+<style>
+  .agent { display: flex; align-items: center; gap: 10px; flex: 1; margin-left: 12px; }
+  .agent .av { width: 40px; height: 40px; border-radius: 50%; background: var(--forest-900); color: var(--mint); display: grid; place-items: center; font-weight: 800; font-size: 14px; position: relative; flex: none; }
+  .agent .av::after { content: ""; position: absolute; right: 0; bottom: 0; width: 11px; height: 11px; border-radius: 50%; background: #22c55e; border: 2px solid var(--bg); }
+  .agent .n { font-size: 15.5px; font-weight: 700; }
+  .agent .s { font-size: 12px; color: var(--emerald); font-weight: 600; }
+  .thread { padding: 6px 18px; display: flex; flex-direction: column; gap: 10px; }
+  .day { text-align: center; font-size: 11.5px; color: var(--muted); font-weight: 600; margin: 4px 0; }
+  .msg { max-width: 78%; padding: 11px 14px; border-radius: 18px; font-size: 14px; line-height: 1.45; }
+  .msg time { display: block; font-size: 10.5px; margin-top: 4px; opacity: .6; text-align: right; }
+  .in { background: #fff; border: 1px solid var(--border); border-bottom-left-radius: 6px; }
+  .out { align-self: flex-end; background: var(--forest-900); color: #fff; border-bottom-right-radius: 6px; }
+  .ticket { display: flex; gap: 10px; align-items: center; background: #fff; border: 1px solid var(--border); border-radius: 14px; padding: 10px 12px; align-self: flex-end; max-width: 78%; }
+  .ticket .ic { width: 34px; height: 34px; }
+  .ticket .t { font-size: 13px; font-weight: 700; }
+  .ticket .s { font-size: 11.5px; color: var(--text-2); }
+  .typing { display: flex; gap: 4px; padding: 14px; width: 62px; }
+  .typing span { width: 7px; height: 7px; border-radius: 50%; background: #9fb3a9; }
+  .quick { display: flex; gap: 8px; padding: 0 18px; position: absolute; bottom: 92px; left: 0; right: 0; }
+  .composer { position: absolute; left: 0; right: 0; bottom: 0; padding: 10px 14px 30px; background: #fff; border-top: 1px solid #edf1ef; display: flex; gap: 10px; align-items: center; }
+  .composer .input { flex: 1; height: 46px; border-radius: 999px; background: var(--bg); }
+  .send { width: 46px; height: 46px; border-radius: 50%; background: var(--emerald); color: #fff; display: grid; place-items: center; flex: none; }
+  .send svg { width: 19px; height: 19px; }
+</style></head>
+<body><div class="device">
+  <div class="status"></div>
+  <div class="header">
+    <div class="icon-btn"><i data-i="chevron-left"></i></div>
+    <div class="agent"><div class="av">AM</div><div><div class="n">Aline · LINE-UP Support</div><div class="s">Online now</div></div></div>
+    <div class="icon-btn"><i data-i="phone"></i></div>
+  </div>
+  <div class="thread">
+    <div class="day">Today</div>
+    <div class="msg in">Muraho Roohi! 👋 I'm Aline from LINE-UP support. How can I help you today?<time>09:52</time></div>
+    <div class="msg out">Hi! I was charged twice for my trip on A024 this morning.<time>09:53</time></div>
+    <div class="ticket"><div class="ic"><i data-i="ticket"></i></div><div><div class="t">Ticket #LNU-9842</div><div class="s">A024 · Nyabugogo → Kicukiro · RWF 800</div></div></div>
+    <div class="msg in">Thanks for sharing. I can see two MoMo payments of RWF 800. I've started a refund for the duplicate. It will reach your MoMo wallet within 24 hours.<time>09:55</time></div>
+    <div class="msg in typing"><span></span><span></span><span></span></div>
+  </div>
+  <div class="quick"><div class="chip">Thank you!</div><div class="chip">Check refund status</div></div>
+  <div class="composer">
+    <div class="icon-btn" style="border:none;background:var(--bg)"><i data-i="image"></i></div>
+    <div class="input"><span class="ph">Type a message…</span></div>
+    <div class="send"><i data-i="send"></i></div>
+  </div>
+</div>
+<script src="icons.js"></script></body></html>
