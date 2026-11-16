@@ -20,7 +20,7 @@ export const envSchema = z.object({
     ),
   CORS_ORIGIN: z
     .string()
-    .default('http://localhost:3000')
+    .default('http://localhost:3003')
     .transform((value) => value.split(',').map((origin) => origin.trim())),
 });
 

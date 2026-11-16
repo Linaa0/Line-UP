@@ -9,7 +9,7 @@ describe('validateEnv', () => {
     const env = validateEnv(valid);
     expect(env.PORT).toBe(4000);
     expect(env.NODE_ENV).toBe('development');
-    expect(env.CORS_ORIGIN).toEqual(['http://localhost:3000']);
+    expect(env.CORS_ORIGIN).toEqual(['http://localhost:3003']);
   });
 
   it('rejects a missing DATABASE_URL', () => {

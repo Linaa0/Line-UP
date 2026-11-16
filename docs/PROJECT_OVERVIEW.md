@@ -1,13 +1,13 @@
 # Project Overview
 
-**Line-Up** is a public transport platform for passengers in Kigali, Rwanda.
+**Line-Up** is a mobile public transport app for passengers in Kigali, Rwanda.
 It helps passengers find routes and stops, buy tickets, pay digitally, join
 queues at stops, and follow buses live.
 
 ## Users
 
-- **Passengers** — the primary audience of the first release (mobile-first
-  web app).
+- **Passengers** — the primary audience of the first release (native
+  Android and iOS app built with Expo).
 - Operator / admin tooling is out of scope for now; the architecture leaves
   room for it as another route group (`(operator)`, `(admin)`) or a separate
   app later.
@@ -34,7 +34,7 @@ The Figma design and the code are both organised around this journey:
 
 | Folder      | What it is                                               |
 | ----------- | -------------------------------------------------------- |
-| `frontend/` | Next.js passenger web app                                |
+| `mobile/`   | Expo React Native passenger app (Android + iOS)          |
 | `backend/`  | NestJS REST API + Prisma (PostgreSQL)                     |
 | `design/`   | Figma exports and design-system notes (not shipped)      |
 | `docs/`     | Project documentation                                    |
