@@ -1,0 +1,67 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><link rel="stylesheet" href="shared.css">
+<style>
+  .hero { margin: 2px 18px 0; border-radius: 22px; padding: 18px; color: #fff;
+          background: radial-gradient(120% 140% at 85% 0%, #1d7a50 0%, #0b5536 45%, #06331f 100%); position: relative; overflow: hidden; }
+  .hero::after { content: ""; position: absolute; right: -40px; bottom: -60px; width: 180px; height: 180px; border-radius: 50%; border: 26px solid rgba(112,251,190,.08); }
+  .who { display: flex; align-items: center; gap: 14px; }
+  .avatar { width: 62px; height: 62px; border-radius: 50%; background: var(--mint); color: var(--forest-900); display: grid; place-items: center; font-size: 22px; font-weight: 800; border: 3px solid rgba(255,255,255,.25); }
+  .who .n { font-size: 19px; font-weight: 800; }
+  .who .p { font-size: 13px; opacity: .8; margin-top: 3px; }
+  .verified { margin-top: 7px; display: inline-flex; gap: 4px; align-items: center; font-size: 11px; font-weight: 700; color: var(--forest-900); background: var(--mint); border-radius: 999px; padding: 3px 9px; }
+  .verified svg { width: 12px; height: 12px; }
+  .edit { position: absolute; top: 18px; right: 18px; width: 36px; height: 36px; border-radius: 50%; background: rgba(255,255,255,.14); display: grid; place-items: center; }
+  .edit svg { width: 17px; height: 17px; }
+  .stats { display: flex; margin-top: 16px; background: rgba(255,255,255,.1); border-radius: 14px; padding: 11px 0; position: relative; z-index: 1; }
+  .stats div { flex: 1; text-align: center; }
+  .stats div + div { border-left: 1px solid rgba(255,255,255,.15); }
+  .stats b { display: block; font-size: 18px; }
+  .stats span { font-size: 11px; opacity: .75; }
+  .content { padding-bottom: 100px; }
+  .logout { color: var(--danger); }
+  .row { padding: 11px 14px; }
+  .section-label { margin-top: 14px; }
+</style></head>
+<body><div class="device">
+  <div class="status"></div>
+  <div class="header">
+    <div class="spacer"></div>
+    <h1>Profile</h1>
+    <div class="icon-btn"><i data-i="bell"></i></div>
+  </div>
+  <div class="hero">
+    <div class="edit"><i data-i="edit"></i></div>
+    <div class="who">
+      <div class="avatar">RU</div>
+      <div>
+        <div class="n">Roohi Uwase</div>
+        <div class="p">+250 788 123 456</div>
+        <div class="verified"><i data-i="shield"></i>Verified account</div>
+      </div>
+    </div>
+    <div class="stats">
+      <div><b>24</b><span>Trips taken</span></div>
+      <div><b>2</b><span>Active tickets</span></div>
+      <div><b>3</b><span>Saved routes</span></div>
+    </div>
+  </div>
+  <div class="content">
+    <div class="section-label"><span>Account</span></div>
+    <div class="card">
+      <div class="row"><div class="ic"><i data-i="user"></i></div><div class="grow"><div class="t">Personal information</div></div><i data-i="chevron-right" class="chev"></i></div>
+      <div class="row"><div class="ic"><i data-i="wallet"></i></div><div class="grow"><div class="t">Payment methods</div><div class="s">MTN MoMo •••456 · Default</div></div><i data-i="chevron-right"></i></div>
+      <div class="row"><div class="ic"><i data-i="bookmark"></i></div><div class="grow"><div class="t">Saved routes</div><div class="s">Nyabugogo → Kicukiro and 2 more</div></div><i data-i="chevron-right"></i></div>
+    </div>
+    <div class="section-label"><span>Preferences</span></div>
+    <div class="card">
+      <div class="row"><div class="ic"><i data-i="sliders"></i></div><div class="grow"><div class="t">Settings</div></div><i data-i="chevron-right"></i></div>
+      <div class="row"><div class="ic"><i data-i="headset"></i></div><div class="grow"><div class="t">Help &amp; support</div></div><i data-i="chevron-right"></i></div>
+      <div class="row logout"><div class="ic red"><i data-i="logout"></i></div><div class="grow"><div class="t">Log out</div></div></div>
+    </div>
+  </div>
+  <div class="tabbar" data-active="Profile"></div>
+  <div class="home-indicator"></div>
+</div>
+<script src="icons.js"></script>
+<script>document.querySelectorAll('.row > svg:last-child').forEach(s => s.classList.add('chev'));</script>
+</body></html>

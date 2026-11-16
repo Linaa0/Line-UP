@@ -1,0 +1,47 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><link rel="stylesheet" href="shared.css">
+<style>
+  .trip { padding: 13px 14px; display: flex; align-items: center; gap: 12px; }
+  .busid { background: var(--forest-900); color: #fff; font-weight: 800; font-size: 13px; padding: 7px 9px; border-radius: 8px; }
+  .trip .t { font-size: 14.5px; font-weight: 700; }
+  .trip .s { font-size: 12px; color: var(--text-2); margin-top: 2px; }
+  .change { margin-left: auto; font-size: 12.5px; font-weight: 700; color: var(--emerald); }
+  .attach { height: 74px; border: 1.5px dashed #b9d9c8; border-radius: 14px; display: flex; align-items: center; justify-content: center; gap: 8px; color: var(--forest-700); font-size: 13.5px; font-weight: 600; background: #f9fdfb; }
+  .attach svg { width: 20px; height: 20px; }
+  .section-label { margin-top: 16px; }
+</style></head>
+<body><div class="device">
+  <div class="status"></div>
+  <div class="header">
+    <div class="icon-btn"><i data-i="chevron-left"></i></div>
+    <h1>Report an Issue</h1>
+    <div class="spacer"></div>
+  </div>
+  <div class="content">
+    <div class="section-label" style="margin-top:4px"><span>Related trip</span></div>
+    <div class="card trip">
+      <div class="busid">A024</div>
+      <div><div class="t">Nyabugogo → Kicukiro</div><div class="s">Today, 09:48 · Ticket #LNU-9842</div></div>
+      <div class="change">Change</div>
+    </div>
+
+    <div class="section-label"><span>What went wrong?</span></div>
+    <div class="chips">
+      <div class="chip active">Payment</div><div class="chip">Ticket / QR</div><div class="chip">Bus delay</div>
+      <div class="chip">Driver conduct</div><div class="chip">Lost item</div><div class="chip">Other</div>
+    </div>
+
+    <div class="section-label"><span>Describe the issue</span></div>
+    <div class="input textarea focus">I was charged RWF 800 twice for the same trip on MoMo. Only one ticket shows in the app.</div>
+    <p class="small muted" style="text-align:right;margin-top:6px">86 / 500</p>
+
+    <div class="section-label"><span>Attachments (optional)</span></div>
+    <div class="attach"><i data-i="image"></i>Add a screenshot or photo</div>
+  </div>
+  <div class="footer">
+    <div class="btn"><i data-i="send"></i>Submit Report</div>
+    <p class="small muted" style="text-align:center;margin-top:10px">We usually respond within 24 hours via SMS.</p>
+  </div>
+  <div class="home-indicator"></div>
+</div>
+<script src="icons.js"></script></body></html>

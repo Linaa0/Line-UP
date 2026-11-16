@@ -3,7 +3,10 @@
 This folder is the single source of truth for everything exported from Figma.
 It is **reference material**, not application code. Nothing in this folder is
 served to users. Production assets are copied from here into
-`frontend/public/` when a screen is implemented.
+`mobile/assets/` when a screen is implemented.
+
+See **[SCREEN_FLOW.md](SCREEN_FLOW.md)** for every screen, its file name and
+how the screens connect.
 
 ```
 design/
@@ -16,7 +19,8 @@ design/
 │   ├── illustrations/
 │   ├── images/
 │   └── fonts/
-└── design-system/           # Written tokens: colors, typography, spacing, components
+├── design-system/           # Written tokens: colors, typography, spacing, components
+└── mockups/                 # HTML source of screens designed outside Figma (render.mjs → PNG)
 ```
 
 The key rule: **screenshots of screens never go in `exported-assets/`, and
@@ -87,16 +91,21 @@ stage in the passenger journey:
 
 When a screen is implemented, copy only the assets it needs:
 
-| From `design/exported-assets/` | To `frontend/public/`         | Used in code as                       |
-| ------------------------------ | ----------------------------- | ------------------------------------- |
-| `logos/`                       | `assets/logos/`               | `/assets/logos/logo-primary.svg`      |
-| `icons/`                       | `assets/icons/`               | `/assets/icons/icon-bus.svg`          |
-| `illustrations/`               | `assets/illustrations/`       | `/assets/illustrations/…`             |
-| `images/`                      | `assets/images/`              | `/assets/images/…`                    |
-| `fonts/`                       | `fonts/`                      | loaded via `next/font/local`          |
+| From `design/exported-assets/` | To `mobile/`                   | Notes                                  |
+| ------------------------------ | ------------------------------ | -------------------------------------- |
+| `logos/`                       | `assets/images/logos/`         | PNG @1x/@2x/@3x (or SVG via a loader)  |
+| `icons/`                       | `assets/images/icons/`         | Prefer an icon library for UI icons    |
+| `illustrations/`               | `assets/images/illustrations/` | PNG @2x/@3x                            |
+| `images/`                      | `assets/images/`               | WebP/PNG @2x                           |
+| `fonts/`                       | `assets/fonts/`                | loaded with `expo-font`                |
+
+The app icon and splash image are set in `mobile/app.json`
+(`assets/images/icon.png`, `splash-icon.png`, Android adaptive icon layers).
+React Native does not render SVG out of the box, so export logos as PNG at
+1x, 2x and 3x (`logo-primary.png`, `logo-primary@2x.png`, `logo-primary@3x.png`).
 
 Optimise before copying (run SVGs through SVGO, compress raster images).
-Never copy anything from `figma-references/` into the frontend.
+Never copy anything from `figma-references/` into the app.
 
 ## 6. Naming exported screens
 
