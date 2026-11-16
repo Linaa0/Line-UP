@@ -43,6 +43,9 @@ Re-render design mockups: `node design/mockups/render.mjs` (needs Edge/Chrome).
   - Style with `StyleSheet` + tokens from `src/constants/theme.ts`; take values from
     `design/design-system/*.md` / Figma — never invent brand colors.
   - Always `npx expo install` packages; never edit generated `ios/` / `android/` folders.
+  - Build screens from the primitives in `src/components/ui/` (Button, TextField, Card, Pill,
+    Chip, IconTile, ListRow, Toggle, Text) and `Screen` / `ScreenHeader`; icons are Feather via `Icon`.
+  - Preview components at `/dev/ui-kit` (dev builds only).
   - Import alias `@/*` → `src/*`.
 - Backend:
   - One Nest module per domain folder (controller → service → PrismaService).
