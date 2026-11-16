@@ -20,7 +20,8 @@ Each phase is approved before the next begins.
 - [ ] Resolve the design inconsistencies listed in `design/SCREEN_FLOW.md`
 - [ ] Confirm fonts and fill in typography / spacing docs
 - [ ] Replace the default app icon and splash with the Line-Up logo
-- [ ] Build UI primitives (Button, Input, Card, Pill) and the bottom tab bar
+- [x] Build UI primitives (Button, TextField, Card, Pill, Chip, IconTile, ListRow, Toggle) and the bottom tab bar
+- [x] Dev-only UI kit screen at `/dev/ui-kit` for checking components against the designs
 
 ## Phase 2 — Data model
 
