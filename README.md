@@ -1,26 +1,27 @@
 # Line-Up
 
-Public transport platform for passengers in Kigali, Rwanda — find routes and
+Mobile public transport app for passengers in Kigali, Rwanda — find routes and
 stops, buy and pay for tickets, join stop queues and follow buses live.
 
-> **Status:** project foundation. No features are implemented yet.
+> **Status:** project foundation + complete screen designs. Screen
+> implementation has not started yet.
 
 ## Tech stack
 
-| Layer     | Technology                                                   |
-| --------- | ------------------------------------------------------------ |
-| Frontend  | Next.js (App Router), React, TypeScript, Tailwind CSS, shadcn/ui |
-| Backend   | NestJS, Node.js, TypeScript, REST                            |
-| Database  | PostgreSQL, Prisma ORM                                       |
-| Tooling   | Git, GitHub, ESLint (frontend), oxlint + Prettier + Vitest (backend) |
+| Layer    | Technology                                                        |
+| -------- | ----------------------------------------------------------------- |
+| Mobile   | React Native, Expo (SDK 58), Expo Router, TypeScript              |
+| Backend  | NestJS, Node.js, TypeScript, REST                                 |
+| Database | PostgreSQL, Prisma ORM                                            |
+| Tooling  | Git, GitHub, ESLint (mobile), oxlint + Prettier + Vitest (backend) |
 
 ## Repository structure
 
 ```
 line-up/
-├── frontend/   # Next.js passenger web app       → http://localhost:3000
-├── backend/    # NestJS REST API + Prisma        → http://localhost:4000/api/v1
-├── design/     # Figma exports & design-system notes (reference only)
+├── mobile/     # Expo React Native passenger app (Android + iOS)
+├── backend/    # NestJS REST API + Prisma   → http://localhost:4000/api/v1
+├── design/     # Figma exports, screen flow & design-system notes (reference only)
 ├── docs/       # Project documentation
 ├── .editorconfig
 ├── .env.example
@@ -34,24 +35,26 @@ and env files. Install and run each one from its own folder.
 
 ## Quick start
 
-Requirements: Node.js 20.9+ (22 LTS recommended), npm, PostgreSQL 16+.
+Requirements: Node.js 22.22+ (or 24 LTS), npm, PostgreSQL 16+, and the
+**Expo Go** app on your phone (or an Android emulator / iOS simulator).
 
 ```bash
 # Backend
 cd backend
 npm install
 cp .env.example .env          # set DATABASE_URL
-npm run prisma:generate
 npm run start:dev             # http://localhost:4000/api/v1/health
 ```
 
 ```bash
-# Frontend (second terminal)
-cd frontend
+# Mobile (second terminal)
+cd mobile
 npm install
 cp .env.example .env.local
-npm run dev                   # http://localhost:3000
+npm start                     # scan the QR code with Expo Go
 ```
+
+`npm run web` in `mobile/` previews the app in a browser on port 3003.
 
 ## Documentation
 
@@ -62,3 +65,4 @@ npm run dev                   # http://localhost:3000
 - [Development guide](docs/DEVELOPMENT_GUIDE.md)
 - [Implementation roadmap](docs/IMPLEMENTATION_ROADMAP.md)
 - [Design assets guide](design/README.md)
+- [Screen flow](design/SCREEN_FLOW.md)

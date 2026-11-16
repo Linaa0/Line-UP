@@ -6,54 +6,58 @@ TypeScript config and env file. They communicate only over HTTP (REST/JSON).
 
 ```
 ┌──────────────────────┐   HTTPS / JSON   ┌──────────────────────┐   Prisma   ┌────────────┐
-│ frontend (Next.js)   │ ───────────────▶ │ backend (NestJS)     │ ─────────▶ │ PostgreSQL │
-│ localhost:3000       │  /api/v1/...     │ localhost:4000       │            │            │
+│ mobile (Expo / RN)   │ ───────────────▶ │ backend (NestJS)     │ ─────────▶ │ PostgreSQL │
+│ Android · iOS        │  /api/v1/...     │ localhost:4000       │            │            │
 └──────────────────────┘                  └──────────────────────┘            └────────────┘
 ```
 
-## Frontend — `frontend/`
+## Mobile — `mobile/`
 
-Next.js (App Router) · React · TypeScript · Tailwind CSS v4 · shadcn/ui.
+React Native · Expo SDK 58 · Expo Router (file-based navigation) · TypeScript.
+Styling uses React Native `StyleSheet` with the tokens in
+`src/constants/theme.ts` (no CSS framework).
 
 ```
-frontend/src/
-├── app/                 # Routing only: layouts, pages, route groups
-│   ├── (marketing)/     # Public pages (landing, about)
-│   ├── (auth)/          # Sign-in / sign-up / verification
-│   ├── (passenger)/     # Signed-in passenger app (home, tickets, …)
-│   ├── layout.tsx       # Root layout: fonts, metadata, <html>/<body>
-│   └── globals.css      # Tailwind import + design tokens (CSS variables)
-├── components/
-│   ├── ui/              # shadcn/ui primitives (Button, Input, …)
-│   ├── layout/          # App shell pieces (page container, headers)
-│   ├── navigation/      # Bottom tab bar, back-header, menus
-│   └── shared/          # Cross-feature composites (empty state, badges)
-├── features/<feature>/  # Everything specific to one feature
-├── hooks/               # Generic React hooks shared across features
-├── lib/                 # Library setup & helpers (cn(), env, api client)
-├── services/            # Cross-feature API clients
-├── types/               # Shared TypeScript types
-├── constants/           # App-wide constants
-└── utils/               # Pure, framework-free helper functions
+mobile/
+├── app.json             # Expo config: name, bundle ids, icons, splash, plugins
+├── assets/
+│   ├── images/          # App icon, splash, favicon (+ logos/, icons/, illustrations/)
+│   └── fonts/           # Brand fonts, loaded with expo-font
+└── src/
+    ├── app/             # Routes only (Expo Router): every file is a screen
+    │   ├── _layout.tsx  # Root stack navigator + status bar
+    │   ├── (onboarding)/# Splash, welcome, intro slides
+    │   ├── (auth)/      # Create account, OTP, log in
+    │   └── (tabs)/      # Bottom tabs: Home, Routes, Tickets, Live Map, Profile
+    ├── components/
+    │   ├── ui/          # Primitives (Button, Input, Card, Pill, Toggle …)
+    │   ├── layout/      # Screen container, safe-area wrappers
+    │   ├── navigation/  # Tab bar, back header
+    │   └── shared/      # Cross-feature composites (route card, empty state)
+    ├── features/<feature>/  # Screens + logic for one feature
+    ├── constants/theme.ts   # Colors, spacing, radius, type scale
+    ├── hooks/ lib/ services/ types/ utils/
 ```
 
 **Rules**
 
-- `app/` files stay thin: a page imports a screen component from its
-  feature and renders it.
-- A feature folder owns its components, hooks, API calls and types:
+- `src/app/` files stay thin: a route file renders a screen component from
+  its feature folder.
+- A feature folder owns its screens, components, hooks, API calls and types:
   ```
   features/tickets/
+  ├── screens/
   ├── components/
-  ├── hooks/
   ├── api.ts
   └── types.ts
   ```
   Create sub-folders only when the feature needs them.
 - Code moves to `components/shared`, `hooks/` or `lib/` only once a second
   feature needs it.
-- Route groups `(…)` organise layouts without affecting URLs.
+- Route groups `(…)` organise navigators without affecting URLs.
 - Path alias: `@/*` → `src/*`.
+- Add packages with `npx expo install` so versions match the Expo SDK.
+- Native folders (`ios/`, `android/`) are generated, never edited by hand.
 
 ## Backend — `backend/`
 
