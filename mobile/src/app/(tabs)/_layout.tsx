@@ -1,10 +1,12 @@
 import { Tabs } from 'expo-router';
+import { Platform } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Icon, type IconName } from '@/components/ui/icon';
-import { colors } from '@/constants/theme';
+import { colors, fonts } from '@/constants/theme';
 
 const tabs: { name: string; title: string; icon: IconName }[] = [
-  { name: 'index', title: 'Home', icon: 'home' },
+  { name: 'home', title: 'Home', icon: 'home' },
   { name: 'routes', title: 'Routes', icon: 'git-branch' },
   { name: 'tickets', title: 'Tickets', icon: 'credit-card' },
   { name: 'live-map', title: 'Live Map', icon: 'map' },
@@ -13,6 +15,8 @@ const tabs: { name: string; title: string; icon: IconName }[] = [
 
 /** Bottom tab bar: Home · Routes · Tickets · Live Map · Profile (see design/SCREEN_FLOW.md). */
 export default function TabsLayout() {
+  const insets = useSafeAreaInsets();
+  const bottom = Math.max(insets.bottom, Platform.OS === 'web' ? 10 : 8);
   return (
     <Tabs
       screenOptions={{
@@ -22,10 +26,11 @@ export default function TabsLayout() {
         tabBarStyle: {
           backgroundColor: colors.card,
           borderTopColor: '#EDF1EF',
-          height: 86,
-          paddingTop: 8,
+          height: 58 + bottom,
+          paddingTop: 7,
+          paddingBottom: bottom,
         },
-        tabBarLabelStyle: { fontSize: 11, fontWeight: '600' },
+        tabBarLabelStyle: { fontSize: 11, fontFamily: fonts.semibold },
         sceneStyle: { backgroundColor: colors.background },
       }}
     >
