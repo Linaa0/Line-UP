@@ -115,34 +115,43 @@ async function main() {
     ];
 
     for (const [direction, path] of directions) {
-      await prisma.route.deleteMany({ where: { code: r.code, direction } });
-      await prisma.route.create({
-        data: {
-          code: r.code,
-          direction,
-          kind: r.kind,
-          operator: r.operator,
-          via: r.via,
-          fare: r.fare,
-          frequencyMin: r.frequencyMin,
-          firstDeparture: toMinutes(r.firstDeparture),
-          lastDeparture: toMinutes(r.lastDeparture),
-          acceptsMomo: r.acceptsMomo ?? true,
-          stops: {
-            create: path.map(([name, minutesFromStart, bay], order) => {
-              const stopId = stopIds.get(name);
-              if (!stopId) throw new Error(`Unknown stop ${name}`);
-              return { stopId, order, minutesFromStart, bay: bay ?? null };
-            }),
-          },
-          buses: {
-            create: [0, 1].map(() => {
-              busNumber += 1;
-              return { plate: `RAE ${busNumber} ${direction === Direction.OUTBOUND ? 'A' : 'B'}`, capacity: 70 };
-            }),
-          },
-        },
+      // Update routes in place (never delete them): tickets reference routes,
+      // so the seed must be safe to rerun on a database that has real data.
+      const details = {
+        kind: r.kind,
+        operator: r.operator,
+        via: r.via,
+        fare: r.fare,
+        frequencyMin: r.frequencyMin,
+        firstDeparture: toMinutes(r.firstDeparture),
+        lastDeparture: toMinutes(r.lastDeparture),
+        acceptsMomo: r.acceptsMomo ?? true,
+      };
+      const route = await prisma.route.upsert({
+        where: { code_direction: { code: r.code, direction } },
+        update: details,
+        create: { code: r.code, direction, ...details },
       });
+
+      // Route stops are only referenced by their route, so they can be replaced.
+      await prisma.routeStop.deleteMany({ where: { routeId: route.id } });
+      await prisma.routeStop.createMany({
+        data: path.map(([name, minutesFromStart, bay], order) => {
+          const stopId = stopIds.get(name);
+          if (!stopId) throw new Error(`Unknown stop ${name}`);
+          return { routeId: route.id, stopId, order, minutesFromStart, bay: bay ?? null };
+        }),
+      });
+
+      for (let i = 0; i < 2; i++) {
+        busNumber += 1;
+        const plate = `RAE ${busNumber} ${direction === Direction.OUTBOUND ? 'A' : 'B'}`;
+        await prisma.bus.upsert({
+          where: { plate },
+          update: { routeId: route.id, capacity: 70 },
+          create: { plate, routeId: route.id, capacity: 70 },
+        });
+      }
     }
   }
 
