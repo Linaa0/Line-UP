@@ -5,6 +5,7 @@ import { ActivityIndicator, Animated, Easing, StyleSheet, View } from 'react-nat
 
 import { BusMark } from '@/components/shared/logo';
 import { Text } from '@/components/ui/text';
+import { NATIVE_DRIVER } from '@/constants/motion';
 import { colors, fonts } from '@/constants/theme';
 
 const skyline = require('@/assets/images/illustrations/kigali-skyline.png');
@@ -15,9 +16,9 @@ export function AnimatedSplash({ onFinish }: { onFinish: () => void }) {
   const [rise] = useState(() => new Animated.Value(16));
 
   useEffect(() => {
-    Animated.timing(rise, { toValue: 0, duration: 600, easing: Easing.out(Easing.cubic), useNativeDriver: true }).start();
+    Animated.timing(rise, { toValue: 0, duration: 600, easing: Easing.out(Easing.cubic), useNativeDriver: NATIVE_DRIVER }).start();
     const timer = setTimeout(() => {
-      Animated.timing(opacity, { toValue: 0, duration: 380, useNativeDriver: true }).start(() => onFinish());
+      Animated.timing(opacity, { toValue: 0, duration: 380, useNativeDriver: NATIVE_DRIVER }).start(() => onFinish());
     }, 1500);
     return () => clearTimeout(timer);
   }, [opacity, rise, onFinish]);

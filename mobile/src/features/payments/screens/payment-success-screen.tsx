@@ -11,6 +11,7 @@ import { Card } from '@/components/ui/card';
 import { Icon } from '@/components/ui/icon';
 import { Pill } from '@/components/ui/pill';
 import { Text } from '@/components/ui/text';
+import { NATIVE_DRIVER } from '@/constants/motion';
 import { colors, fonts, radius, shadow } from '@/constants/theme';
 import { useApi } from '@/hooks/use-api';
 import { api, ApiError } from '@/lib/api';
@@ -26,7 +27,7 @@ export default function PaymentSuccessScreen() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    Animated.spring(scale, { toValue: 1, friction: 5, tension: 80, useNativeDriver: true }).start();
+    Animated.spring(scale, { toValue: 1, friction: 5, tension: 80, useNativeDriver: NATIVE_DRIVER }).start();
   }, [scale]);
 
   const joinQueue = async () => {
