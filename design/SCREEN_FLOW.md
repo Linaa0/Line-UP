@@ -78,17 +78,17 @@ Live Map tab ─▶ 09-01 Live Map ─▶ "View Route" ─▶ 05-01 Route Detail
 | `13-support/13-02-report-issue.png` | Report an Issue | Mockup |
 | `13-support/13-03-live-chat.png` | Live Chat | Mockup |
 
-## Design inconsistencies to resolve before implementation
+## Design inconsistencies (how the app resolves them)
 
 1. **Logo mark varies** between screens (bus icon, map pin, "L" square, grid
    icon). The app will use the bus icon from the splash/welcome screens unless
-   you choose otherwise.
+   you choose otherwise. **Resolved:** the app uses the bus mark everywhere.
 2. **Fares differ for the same trip**: A024 Nyabugogo → Kicukiro is RWF 450 on
-   Home and RWF 800 elsewhere.
+   Home and RWF 800 elsewhere. **Resolved:** fares come from the database (A024 = RWF 800).
 3. **"Join Queue" vs. purchase order**: Route Details' button says "Join Queue"
    but leads into ticket purchase; the queue screens come after payment.
-   Consider renaming the button to "Get Ticket".
+   **Resolved:** the button is "Get Ticket"; the queue is joined after payment.
 4. **Bottom tab icons** differ slightly between Home, Find a Route and Live Map.
 5. **"Tap&Go" / "Tap & Go"** spelling varies.
 6. A **My Tickets list** (several tickets, history) is not designed yet; the
-   Tickets tab currently has only the single-ticket view.
+   Tickets tab currently has only the single-ticket view. **Resolved:** a My Tickets list was built in the same style.

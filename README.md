@@ -3,8 +3,9 @@
 Mobile public transport app for passengers in Kigali, Rwanda — find routes and
 stops, buy and pay for tickets, join stop queues and follow buses live.
 
-> **Status:** project foundation + complete screen designs. Screen
-> implementation has not started yet.
+> **Status:** working app. All screens are built and connected to the API.
+> SMS codes, Mobile Money payments and bus positions are demo/estimated and
+> labelled as such in the app (see [docs/API.md](docs/API.md)).
 
 ## Tech stack
 
@@ -42,7 +43,9 @@ Requirements: Node.js 22.22+ (or 24 LTS), npm, PostgreSQL 16+, and the
 # Backend
 cd backend
 npm install
-cp .env.example .env          # set DATABASE_URL
+cp .env.example .env          # set DATABASE_URL and JWT_SECRET
+npx prisma migrate deploy     # create the tables
+npm run prisma:seed           # load Kigali sample routes
 npm run start:dev             # http://localhost:4000/api/v1/health
 ```
 
