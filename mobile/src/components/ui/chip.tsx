@@ -1,7 +1,7 @@
 import { Pressable, StyleSheet } from 'react-native';
 
 import { Text } from '@/components/ui/text';
-import { colors, radius } from '@/constants/theme';
+import { colors, fonts, radius } from '@/constants/theme';
 
 type ChipProps = {
   label: string;
@@ -35,5 +35,5 @@ const styles = StyleSheet.create({
     backgroundColor: colors.card,
   },
   selected: { backgroundColor: colors.forest900, borderColor: colors.forest900 },
-  label: { fontSize: 13, fontWeight: '600' },
+  label: { fontSize: 13, fontFamily: fonts.semibold },
 });

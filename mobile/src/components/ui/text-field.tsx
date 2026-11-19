@@ -3,7 +3,7 @@ import { Pressable, StyleSheet, TextInput, View, type TextInputProps } from 'rea
 
 import { Icon, type IconName } from '@/components/ui/icon';
 import { Text } from '@/components/ui/text';
-import { colors, radius } from '@/constants/theme';
+import { colors, fonts, radius } from '@/constants/theme';
 
 type TextFieldProps = TextInputProps & {
   label?: string;
@@ -108,7 +108,8 @@ const styles = StyleSheet.create({
     alignSelf: 'stretch',
     justifyContent: 'center',
   },
-  input: { flex: 1, fontSize: 15, color: colors.text, paddingVertical: 12 },
+  // outlineWidth: the field draws its own focus ring, so hide the browser's in the web preview.
+  input: { flex: 1, fontSize: 15, fontFamily: fonts.body, color: colors.text, paddingVertical: 12, outlineWidth: 0 },
   inputMultiline: { paddingVertical: 0, textAlignVertical: 'top' },
   hint: { marginTop: -1 },
 });

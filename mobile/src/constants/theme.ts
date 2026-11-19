@@ -8,7 +8,7 @@
 export const colors = {
   // Brand greens
   forest900: '#0E3924', // primary buttons, dark surfaces
-  forest700: '#0D5C3A', // primary button (auth), active tab
+  forest700: '#0D5C3A', // active tab, links on light
   forest600: '#0B5536', // splash / welcome background
   forest950: '#002513', // gradient end on dark screens
   emerald: '#059669', // live status, success, map route
@@ -21,6 +21,7 @@ export const colors = {
   background: '#F4FAF6',
   card: '#FFFFFF',
   border: '#E3EEE8',
+  divider: '#EEF3F0',
   text: '#111827',
   textSecondary: '#4B5563',
   muted: '#94A3B8',
@@ -34,6 +35,16 @@ export const colors = {
   // Payment brands
   momo: '#FFCB05',
   airtel: '#E4312B',
+} as const;
+
+/** Font families loaded in src/app/_layout.tsx. */
+export const fonts = {
+  display: 'PlusJakartaSans_800ExtraBold',
+  heading: 'PlusJakartaSans_700Bold',
+  body: 'Inter_400Regular',
+  medium: 'Inter_500Medium',
+  semibold: 'Inter_600SemiBold',
+  bold: 'Inter_700Bold',
 } as const;
 
 export const spacing = {
@@ -51,18 +62,37 @@ export const radius = {
   md: 12,
   lg: 16, // buttons, inputs
   xl: 18, // cards
+  xxl: 24, // hero cards
   full: 999,
 } as const;
 
-/** Type scale read from the designs (sizes in dp). Fonts: system until brand fonts are confirmed. */
+/** Type scale read from the designs (sizes in dp). */
 export const typography = {
-  display: { fontSize: 30, fontWeight: '800' },
-  h1: { fontSize: 24, fontWeight: '800' },
-  h2: { fontSize: 20, fontWeight: '700' },
-  title: { fontSize: 18, fontWeight: '700' },
-  body: { fontSize: 15, fontWeight: '400' },
-  bodyStrong: { fontSize: 15, fontWeight: '600' },
-  caption: { fontSize: 12.5, fontWeight: '400' },
-  label: { fontSize: 11, fontWeight: '700', letterSpacing: 1.1, textTransform: 'uppercase' },
-  button: { fontSize: 16, fontWeight: '600' },
+  display: { fontFamily: fonts.display, fontSize: 30, lineHeight: 36, letterSpacing: -0.6 },
+  h1: { fontFamily: fonts.display, fontSize: 25, lineHeight: 31, letterSpacing: -0.4 },
+  h2: { fontFamily: fonts.heading, fontSize: 20, lineHeight: 26, letterSpacing: -0.2 },
+  title: { fontFamily: fonts.heading, fontSize: 17, lineHeight: 23 },
+  body: { fontFamily: fonts.body, fontSize: 15, lineHeight: 22 },
+  bodyStrong: { fontFamily: fonts.semibold, fontSize: 15, lineHeight: 21 },
+  caption: { fontFamily: fonts.body, fontSize: 12.5, lineHeight: 17 },
+  captionStrong: { fontFamily: fonts.semibold, fontSize: 12.5, lineHeight: 17 },
+  label: { fontFamily: fonts.semibold, fontSize: 11, lineHeight: 14, letterSpacing: 1.1, textTransform: 'uppercase' },
+  button: { fontFamily: fonts.semibold, fontSize: 16, lineHeight: 20 },
+} as const;
+
+export const shadow = {
+  card: {
+    shadowColor: '#0E3924',
+    shadowOpacity: 0.06,
+    shadowRadius: 14,
+    shadowOffset: { width: 0, height: 6 },
+    elevation: 2,
+  },
+  raised: {
+    shadowColor: '#0E3924',
+    shadowOpacity: 0.16,
+    shadowRadius: 20,
+    shadowOffset: { width: 0, height: 10 },
+    elevation: 6,
+  },
 } as const;

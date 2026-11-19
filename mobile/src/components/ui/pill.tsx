@@ -1,7 +1,7 @@
 import { StyleSheet, View } from 'react-native';
 
 import { Text } from '@/components/ui/text';
-import { colors, radius } from '@/constants/theme';
+import { colors, fonts, radius } from '@/constants/theme';
 
 type Tone = 'mint' | 'outline' | 'dark' | 'warning' | 'danger';
 
@@ -45,5 +45,5 @@ const styles = StyleSheet.create({
     borderWidth: 1,
   },
   dot: { width: 6, height: 6, borderRadius: 3, backgroundColor: colors.emerald },
-  label: { fontSize: 11.5, fontWeight: '600' },
+  label: { fontSize: 11.5, fontFamily: fonts.semibold },
 });
