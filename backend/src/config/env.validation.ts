@@ -22,6 +22,19 @@ export const envSchema = z.object({
     .string()
     .default('http://localhost:3003')
     .transform((value) => value.split(',').map((origin) => origin.trim())),
+  JWT_SECRET: z
+    .string()
+    .min(32, 'JWT_SECRET must be at least 32 characters (use a long random value)'),
+  JWT_EXPIRES_IN_DAYS: z.coerce.number().int().min(1).max(365).default(30),
+  /**
+   * No SMS provider is integrated yet. When true, the API returns the
+   * verification code in its response so the app can show it, clearly
+   * labelled as a demo code. Must be false once real SMS is connected.
+   */
+  OTP_DEMO_MODE: z
+    .enum(['true', 'false'])
+    .default('true')
+    .transform((value) => value === 'true'),
 });
 
 export type Env = z.infer<typeof envSchema>;

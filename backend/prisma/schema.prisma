@@ -1,7 +1,6 @@
 // Line-Up database schema.
-// Models are intentionally not defined yet — they will be designed feature by
-// feature (see docs/DATABASE.md and docs/IMPLEMENTATION_ROADMAP.md).
-// The connection URL is configured in prisma.config.ts (DATABASE_URL).
+// Times of day (route schedules) are stored as minutes after midnight in
+// Kigali time (CAT, UTC+2, no daylight saving). Money is integer RWF.
 
 generator client {
   provider     = "prisma-client"
@@ -11,4 +10,274 @@ generator client {
 
 datasource db {
   provider = "postgresql"
+}
+
+enum RouteKind {
+  EXPRESS
+  REGULAR
+  DIRECT
+}
+
+enum Direction {
+  OUTBOUND
+  INBOUND
+}
+
+enum TicketStatus {
+  PENDING_PAYMENT
+  PAID
+  BOARDED
+  CANCELLED
+}
+
+enum PaymentMethod {
+  MTN_MOMO
+  AIRTEL_MONEY
+}
+
+enum PaymentStatus {
+  PENDING
+  SUCCEEDED
+  FAILED
+}
+
+enum NotificationType {
+  TRIP
+  PAYMENT
+  QUEUE
+  ALERT
+  ACCOUNT
+}
+
+enum ReportCategory {
+  PAYMENT
+  TICKET
+  DELAY
+  CONDUCT
+  LOST_ITEM
+  OTHER
+}
+
+model User {
+  id             String   @id @default(uuid())
+  fullName       String   @map("full_name")
+  phone          String   @unique
+  email          String?
+  passwordHash   String   @map("password_hash")
+  phoneVerified  Boolean  @default(false) @map("phone_verified")
+  homeStopId     String?  @map("home_stop_id")
+  language       String   @default("en")
+  notifyArrivals Boolean  @default(true) @map("notify_arrivals")
+  notifyQueue    Boolean  @default(true) @map("notify_queue")
+  notifyReceipts Boolean  @default(true) @map("notify_receipts")
+  notifyOffers   Boolean  @default(false) @map("notify_offers")
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  homeStop      Stop?           @relation(fields: [homeStopId], references: [id])
+  otpCodes      OtpCode[]
+  tickets       Ticket[]
+  payments      Payment[]
+  queueEntries  QueueEntry[]
+  notifications Notification[]
+  savedRoutes   SavedRoute[]
+  reports       SupportReport[]
+
+  @@map("users")
+}
+
+model OtpCode {
+  id         String    @id @default(uuid())
+  userId     String    @map("user_id")
+  codeHash   String    @map("code_hash")
+  expiresAt  DateTime  @map("expires_at")
+  consumedAt DateTime? @map("consumed_at")
+  attempts   Int       @default(0)
+  createdAt  DateTime  @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("otp_codes")
+}
+
+model Stop {
+  id   String @id @default(uuid())
+  name String @unique
+  area String
+  lat  Float
+  lng  Float
+
+  routeStops   RouteStop[]
+  homeUsers    User[]
+  ticketsFrom  Ticket[]     @relation("TicketFrom")
+  ticketsTo    Ticket[]     @relation("TicketTo")
+  queueEntries QueueEntry[]
+
+  @@map("stops")
+}
+
+model Route {
+  id             String    @id @default(uuid())
+  code           String
+  direction      Direction
+  kind           RouteKind
+  operator       String
+  via            String
+  fare           Int
+  /// Minutes between departures from the first stop.
+  frequencyMin   Int       @map("frequency_min")
+  /// First and last departure from the first stop, minutes after midnight (Kigali time).
+  firstDeparture Int       @map("first_departure")
+  lastDeparture  Int       @map("last_departure")
+  acceptsTapGo   Boolean   @default(true) @map("accepts_tap_go")
+  acceptsMomo    Boolean   @default(true) @map("accepts_momo")
+
+  stops        RouteStop[]
+  buses        Bus[]
+  tickets      Ticket[]
+  queueEntries QueueEntry[]
+  savedBy      SavedRoute[]
+
+  @@unique([code, direction])
+  @@map("routes")
+}
+
+model RouteStop {
+  id               String  @id @default(uuid())
+  routeId          String  @map("route_id")
+  stopId           String  @map("stop_id")
+  order            Int
+  /// Travel time from the first stop of the route.
+  minutesFromStart Int     @map("minutes_from_start")
+  /// Boarding bay / platform at this stop, if any.
+  bay              String?
+
+  route Route @relation(fields: [routeId], references: [id], onDelete: Cascade)
+  stop  Stop  @relation(fields: [stopId], references: [id])
+
+  @@unique([routeId, order])
+  @@unique([routeId, stopId])
+  @@map("route_stops")
+}
+
+model Bus {
+  id       String @id @default(uuid())
+  plate    String @unique
+  capacity Int
+  routeId  String @map("route_id")
+
+  route Route @relation(fields: [routeId], references: [id], onDelete: Cascade)
+
+  @@map("buses")
+}
+
+model Ticket {
+  id          String       @id @default(uuid())
+  code        String       @unique
+  userId      String       @map("user_id")
+  routeId     String       @map("route_id")
+  fromStopId  String       @map("from_stop_id")
+  toStopId    String       @map("to_stop_id")
+  /// Departure of this bus trip from the first stop of the route (identifies the trip).
+  tripStartAt DateTime     @map("trip_start_at")
+  /// Scheduled departure of the bus from the boarding stop.
+  departureAt DateTime     @map("departure_at")
+  arrivalAt   DateTime     @map("arrival_at")
+  fare        Int
+  status      TicketStatus @default(PENDING_PAYMENT)
+  createdAt   DateTime     @default(now()) @map("created_at")
+  updatedAt   DateTime     @updatedAt @map("updated_at")
+
+  user       User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  route      Route           @relation(fields: [routeId], references: [id])
+  fromStop   Stop            @relation("TicketFrom", fields: [fromStopId], references: [id])
+  toStop     Stop            @relation("TicketTo", fields: [toStopId], references: [id])
+  payment    Payment?
+  queueEntry QueueEntry?
+  reports    SupportReport[]
+
+  @@index([userId])
+  @@index([routeId, tripStartAt])
+  @@map("tickets")
+}
+
+model Payment {
+  id        String        @id @default(uuid())
+  ticketId  String        @unique @map("ticket_id")
+  userId    String        @map("user_id")
+  amount    Int
+  method    PaymentMethod
+  phone     String
+  /// "DEMO" until a real provider (MTN MoMo Collections, Airtel Money) is integrated.
+  provider  String
+  reference String        @unique
+  status    PaymentStatus @default(PENDING)
+  createdAt DateTime      @default(now()) @map("created_at")
+
+  ticket Ticket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("payments")
+}
+
+model QueueEntry {
+  id          String    @id @default(uuid())
+  ticketId    String    @unique @map("ticket_id")
+  userId      String    @map("user_id")
+  routeId     String    @map("route_id")
+  stopId      String    @map("stop_id")
+  departureAt DateTime  @map("departure_at")
+  boardedAt   DateTime? @map("boarded_at")
+  createdAt   DateTime  @default(now()) @map("created_at")
+
+  ticket Ticket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  route  Route  @relation(fields: [routeId], references: [id])
+  stop   Stop   @relation(fields: [stopId], references: [id])
+
+  @@index([routeId, stopId, departureAt])
+  @@map("queue_entries")
+}
+
+model Notification {
+  id        String           @id @default(uuid())
+  userId    String           @map("user_id")
+  type      NotificationType
+  title     String
+  body      String
+  readAt    DateTime?        @map("read_at")
+  createdAt DateTime         @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+  @@map("notifications")
+}
+
+model SavedRoute {
+  userId    String   @map("user_id")
+  routeId   String   @map("route_id")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  route Route @relation(fields: [routeId], references: [id], onDelete: Cascade)
+
+  @@id([userId, routeId])
+  @@map("saved_routes")
+}
+
+model SupportReport {
+  id          String         @id @default(uuid())
+  userId      String         @map("user_id")
+  ticketId    String?        @map("ticket_id")
+  category    ReportCategory
+  description String
+  status      String         @default("OPEN")
+  createdAt   DateTime       @default(now()) @map("created_at")
+
+  user   User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  ticket Ticket? @relation(fields: [ticketId], references: [id], onDelete: SetNull)
+
+  @@map("support_reports")
 }
