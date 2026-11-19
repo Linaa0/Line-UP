@@ -3,6 +3,7 @@ import { validateEnv } from './env.validation.js';
 describe('validateEnv', () => {
   const valid = {
     DATABASE_URL: 'postgresql://user:pass@localhost:5432/lineup',
+    JWT_SECRET: 'x'.repeat(40),
   };
 
   it('applies defaults', () => {
@@ -10,6 +11,7 @@ describe('validateEnv', () => {
     expect(env.PORT).toBe(4000);
     expect(env.NODE_ENV).toBe('development');
     expect(env.CORS_ORIGIN).toEqual(['http://localhost:3003']);
+    expect(env.OTP_DEMO_MODE).toBe(true);
   });
 
   it('rejects a missing DATABASE_URL', () => {
@@ -17,7 +19,7 @@ describe('validateEnv', () => {
   });
 
   it('rejects a non-PostgreSQL DATABASE_URL', () => {
-    expect(() => validateEnv({ DATABASE_URL: 'mysql://x' })).toThrow(
+    expect(() => validateEnv({ ...valid, DATABASE_URL: 'mysql://x' })).toThrow(
       /PostgreSQL/,
     );
   });

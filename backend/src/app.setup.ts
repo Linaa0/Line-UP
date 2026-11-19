@@ -1,4 +1,4 @@
-import { type INestApplication, VersioningType } from '@nestjs/common';
+import { type INestApplication, StandardSchemaValidationPipe, VersioningType } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import type { Env } from './config/env.validation.js';
 
@@ -12,5 +12,7 @@ export function configureApp(app: INestApplication): void {
   app.setGlobalPrefix('api');
   app.enableVersioning({ type: VersioningType.URI, defaultVersion: '1' });
   app.enableCors({ origin: config.get('CORS_ORIGIN', { infer: true }) });
+  // Validates @Body/@Query/@Param values against their zod schemas.
+  app.useGlobalPipes(new StandardSchemaValidationPipe());
   app.enableShutdownHooks();
 }
