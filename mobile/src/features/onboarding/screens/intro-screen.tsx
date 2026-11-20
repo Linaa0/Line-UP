@@ -22,7 +22,7 @@ import { Text } from '@/components/ui/text';
 import { colors, fonts, radius, shadow, spacing } from '@/constants/theme';
 import { useAuth } from '@/lib/auth';
 
-const hills = require('@/assets/images/illustrations/kigali-hills.png');
+const city = require('@/assets/images/photos/kigali-city.png');
 
 const FEATURES: { icon: IconName; title: string; body: string }[] = [
   { icon: 'map', title: 'Find Routes', body: 'See all available routes and stops' },
@@ -92,7 +92,7 @@ export default function IntroScreen() {
             Find routes, buy digital tickets, and track city buses in one trusted place.
           </Text>
           <View style={styles.art}>
-            <Image source={hills} style={StyleSheet.absoluteFill} contentFit="cover" />
+            <Image source={city} style={StyleSheet.absoluteFill} contentFit="cover" contentPosition="center" />
             <View style={[styles.artChip, { top: 14, left: 14 }]}>
               <View style={styles.dot} />
               <Text variant="captionStrong">Nyabugogo • Kimironko</Text>
@@ -185,7 +185,7 @@ const styles = StyleSheet.create({
   page: { paddingHorizontal: 22, paddingTop: 22 },
   lede: { marginTop: 10 },
   kicker: { fontFamily: fonts.heading, fontSize: 15, color: colors.emerald, marginTop: 6 },
-  art: { marginTop: 22, flex: 1, maxHeight: 340, minHeight: 230, borderRadius: radius.xxl, overflow: 'hidden', backgroundColor: colors.mint200 },
+  art: { marginTop: 22, width: '100%', aspectRatio: 0.92, maxHeight: 420, borderRadius: radius.xxl, overflow: 'hidden', backgroundColor: colors.mint200 },
   artChip: { position: 'absolute', flexDirection: 'row', alignItems: 'center', gap: 6, backgroundColor: '#FFFFFF', borderRadius: radius.full, paddingHorizontal: 10, paddingVertical: 6, ...shadow.card },
   artChipDark: { backgroundColor: colors.forest900 },
   dot: { width: 7, height: 7, borderRadius: 4, backgroundColor: colors.emerald },
