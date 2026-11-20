@@ -32,7 +32,7 @@ export function useApi<T>(path: string | null, { refreshOnFocus = false, pollMs 
       },
       (e: unknown) => {
         if (id !== latest.current) return;
-        setError(e instanceof ApiError ? e.message : 'Something went wrong.');
+        setError(e instanceof ApiError ? e.message : String(e));
         setSettledPath(p);
         setRefreshing(false);
       },

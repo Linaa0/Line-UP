@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Icon } from '@/components/ui/icon';
 import { Text } from '@/components/ui/text';
 import { colors, spacing } from '@/constants/theme';
+import { useT } from '@/i18n';
 import { api, ApiError } from '@/lib/api';
 import { useAuth } from '@/lib/auth';
 import type { OtpIssued, Session } from '@/lib/types';
@@ -18,6 +19,7 @@ import { NumberPad, OtpBoxes } from '../components/otp-input';
 
 /** Design 02-02. Also used for the password reset code (purpose=reset). */
 export default function VerifyScreen() {
+  const t = useT();
   const params = useLocalSearchParams<{ phone: string; purpose?: 'register' | 'reset' }>();
   const purpose = params.purpose === 'reset' ? 'reset' : 'register';
   const { signIn } = useAuth();
@@ -29,8 +31,8 @@ export default function VerifyScreen() {
 
   useEffect(() => {
     if (wait <= 0) return;
-    const t = setTimeout(() => setWait((w) => w - 1), 1000);
-    return () => clearTimeout(t);
+    const timer = setTimeout(() => setWait((w) => w - 1), 1000);
+    return () => clearTimeout(timer);
   }, [wait]);
 
   const submit = async (value = code) => {
@@ -46,7 +48,7 @@ export default function VerifyScreen() {
       await signIn(session);
       router.replace('/home');
     } catch (e) {
-      setError(e instanceof ApiError ? e.message : 'Could not verify the code.');
+      setError(e instanceof ApiError ? e.message : t('auth.couldNotVerify'));
       setCode('');
     } finally {
       setBusy(false);
@@ -72,26 +74,26 @@ export default function VerifyScreen() {
       setCode('');
       setError(null);
     } catch (e) {
-      setError(e instanceof ApiError ? e.message : 'Could not send a new code.');
+      setError(e instanceof ApiError ? e.message : t('auth.couldNotSend'));
     }
   };
 
   return (
     <SafeAreaView style={styles.root} edges={['top']}>
       <View style={styles.top}>
-        <Pressable onPress={() => router.back()} hitSlop={12} accessibilityLabel="Go back">
+        <Pressable onPress={() => router.back()} hitSlop={12} accessibilityLabel={t('common.back')}>
           <Icon name="chevron-left" size={26} />
         </Pressable>
         {purpose === 'register' && (
           <Text variant="label" color={colors.muted}>
-            Step 2 of 2
+            {t('auth.step')}
           </Text>
         )}
       </View>
       <View style={styles.body}>
-        <Text variant="h1">{purpose === 'reset' ? 'Reset Password' : 'Verify Account'}</Text>
+        <Text variant="h1">{purpose === 'reset' ? t('auth.resetTitle') : t('auth.verifyTitle')}</Text>
         <Text variant="body" color={colors.textSecondary}>
-          Enter the 6-digit code sent to <Text variant="bodyStrong">{formatPhone(params.phone ?? '')}</Text>
+          {t('auth.codeSentTo')} <Text variant="bodyStrong">{formatPhone(params.phone ?? '')}</Text>
         </Text>
         <View style={styles.boxes}>
           <OtpBoxes value={code} error={!!error} />
@@ -103,25 +105,25 @@ export default function VerifyScreen() {
         ) : (
           <View style={styles.resendRow}>
             <Text variant="caption" color={colors.textSecondary}>
-              Didn&apos;t receive the code?{' '}
+              {t('auth.noCode')}{' '}
             </Text>
             <Pressable onPress={resend} disabled={wait > 0} accessibilityRole="button">
               <Text variant="captionStrong" color={wait > 0 ? colors.muted : colors.emerald}>
-                {wait > 0 ? `Resend (${wait}s)` : 'Resend'}
+                {wait > 0 ? t('auth.resendIn', { s: wait }) : t('auth.resend')}
               </Text>
             </Pressable>
           </View>
         )}
-        <Button label={purpose === 'reset' ? 'Continue' : 'Verify'} onPress={() => submit()} loading={busy} disabled={code.length !== 6} />
-        {!!demoCode && (
-          <DemoNotice
-            title={`Demo code: ${demoCode}`}
-            message="SMS isn't connected yet, so the code is shown here. In the real app it arrives by SMS."
-          />
-        )}
+        <Button
+          label={purpose === 'reset' ? t('auth.continue') : t('auth.verify')}
+          onPress={() => submit()}
+          loading={busy}
+          disabled={code.length !== 6}
+        />
+        {!!demoCode && <DemoNotice title={t('demo.codeTitle', { code: demoCode })} message={t('demo.codeBody')} />}
       </View>
       <View style={styles.padWrap}>
-        <NumberPad onKey={onKey} onDelete={() => setCode((c) => c.slice(0, -1))} />
+        <NumberPad onKey={onKey} onDelete={() => setCode((c) => c.slice(0, -1))} deleteLabel={t('auth.delete')} />
       </View>
     </SafeAreaView>
   );
@@ -132,6 +134,6 @@ const styles = StyleSheet.create({
   top: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 20, paddingVertical: 10 },
   body: { flex: 1, paddingHorizontal: spacing.xxl, gap: 14 },
   boxes: { marginVertical: 10 },
-  resendRow: { flexDirection: 'row', justifyContent: 'center' },
+  resendRow: { flexDirection: 'row', justifyContent: 'center', flexWrap: 'wrap' },
   padWrap: { paddingBottom: 18, backgroundColor: '#ECF2EF' },
 });

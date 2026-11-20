@@ -20,26 +20,28 @@ import { Icon } from '@/components/ui/icon';
 import { IconTile } from '@/components/ui/icon-tile';
 import { Text } from '@/components/ui/text';
 import { colors, fonts, radius, shadow, spacing } from '@/constants/theme';
+import { type MessageKey, useT } from '@/i18n';
 import { useAuth } from '@/lib/auth';
 
 const city = require('@/assets/images/photos/kigali-city.png');
 
-const FEATURES: { icon: IconName; title: string; body: string }[] = [
-  { icon: 'map', title: 'Find Routes', body: 'See all available routes and stops' },
-  { icon: 'credit-card', title: 'Buy Tickets', body: 'Pay securely using Mobile Money' },
-  { icon: 'map-pin', title: 'Track Bus', body: 'Get arrival times for your stop' },
-  { icon: 'grid', title: 'Easy Boarding', body: 'Show your QR ticket when you board' },
+const FEATURES: { icon: IconName; title: MessageKey; body: MessageKey }[] = [
+  { icon: 'map', title: 'intro.findRoutes', body: 'intro.findRoutesBody' },
+  { icon: 'credit-card', title: 'intro.buyTickets', body: 'intro.buyTicketsBody' },
+  { icon: 'map-pin', title: 'intro.trackBus', body: 'intro.trackBusBody' },
+  { icon: 'grid', title: 'intro.easyBoarding', body: 'intro.easyBoardingBody' },
 ];
 
-const STEPS = [
-  { title: 'Search for your route', body: 'Choose your departure and destination' },
-  { title: 'View available routes', body: 'Compare times, fares and how full the bus is' },
-  { title: 'Buy your ticket', body: 'Pay with MTN MoMo or Airtel Money' },
-  { title: 'Board your bus', body: 'Show your QR ticket at the boarding point' },
+const STEPS: { title: MessageKey; body: MessageKey }[] = [
+  { title: 'intro.step1', body: 'intro.step1Body' },
+  { title: 'intro.step2', body: 'intro.step2Body' },
+  { title: 'intro.step3', body: 'intro.step3Body' },
+  { title: 'intro.step4', body: 'intro.step4Body' },
 ];
 
 /** Designs 01-03, 01-04 and 01-05 as one swipeable pager. */
 export default function IntroScreen() {
+  const t = useT();
   const { width } = useWindowDimensions();
   const scroller = useRef<ComponentRef<typeof ScrollView>>(null);
   const [page, setPage] = useState(0);
@@ -64,13 +66,13 @@ export default function IntroScreen() {
   return (
     <SafeAreaView style={styles.root}>
       <View style={styles.top}>
-        <Pressable onPress={() => (page === 0 ? router.back() : goTo(page - 1))} hitSlop={12} accessibilityLabel="Back">
+        <Pressable onPress={() => (page === 0 ? router.back() : goTo(page - 1))} hitSlop={12} accessibilityLabel={t('common.back')}>
           <Icon name="arrow-left" size={22} />
         </Pressable>
         <Logo size={18} />
         <Pressable onPress={() => finish('/register')} hitSlop={12} style={styles.skip} accessibilityRole="button">
           <Text variant="captionStrong" color={colors.forest700}>
-            Skip
+            {t('intro.skip')}
           </Text>
         </Pressable>
       </View>
@@ -87,9 +89,9 @@ export default function IntroScreen() {
       >
         {/* 01-03 */}
         <View style={[styles.page, { width: pageWidth }]}>
-          <Text variant="display">Smarter Transport{'\n'}A Better Kigali</Text>
+          <Text variant="display">{t('intro.slide1Title')}</Text>
           <Text variant="body" color={colors.textSecondary} style={styles.lede}>
-            Find routes, buy digital tickets, and track city buses in one trusted place.
+            {t('intro.slide1Body')}
           </Text>
           <View style={styles.art}>
             <Image source={city} style={StyleSheet.absoluteFill} contentFit="cover" contentPosition="center" />
@@ -100,7 +102,7 @@ export default function IntroScreen() {
             <View style={[styles.artChip, styles.artChipDark, { bottom: 14, right: 14 }]}>
               <Icon name="feather" size={13} color="#FFFFFF" />
               <Text variant="captionStrong" color="#FFFFFF">
-                Clean City Transit
+                {t('intro.cleanTransit')}
               </Text>
             </View>
           </View>
@@ -109,18 +111,18 @@ export default function IntroScreen() {
         {/* 01-04 */}
         <View style={[styles.page, { width: pageWidth }]}>
           <Text variant="display" align="center">
-            Why LINE-UP?
+            {t('intro.slide2Title')}
           </Text>
           <Text style={styles.kicker} align="center">
-            Simple. Fast. Reliable.
+            {t('intro.slide2Kicker')}
           </Text>
           <View style={styles.grid}>
             {FEATURES.map((f) => (
               <Card key={f.title} style={styles.feature}>
                 <IconTile name={f.icon} size={42} />
-                <Text variant="title">{f.title}</Text>
+                <Text variant="title">{t(f.title)}</Text>
                 <Text variant="caption" color={colors.textSecondary}>
-                  {f.body}
+                  {t(f.body)}
                 </Text>
               </Card>
             ))}
@@ -129,9 +131,9 @@ export default function IntroScreen() {
 
         {/* 01-05 */}
         <View style={[styles.page, { width: pageWidth }]}>
-          <Text variant="display">How It Works</Text>
+          <Text variant="display">{t('intro.slide3Title')}</Text>
           <Text variant="captionStrong" color={colors.emerald} style={styles.lede}>
-            Fast & predictable urban commuting
+            {t('intro.slide3Kicker')}
           </Text>
           <View style={styles.steps}>
             {STEPS.map((s, i) => (
@@ -143,9 +145,9 @@ export default function IntroScreen() {
                   {i < STEPS.length - 1 && <View style={styles.stepLine} />}
                 </View>
                 <Card style={styles.stepCard}>
-                  <Text variant="bodyStrong">{s.title}</Text>
+                  <Text variant="bodyStrong">{t(s.title)}</Text>
                   <Text variant="caption" color={colors.textSecondary}>
-                    {s.body}
+                    {t(s.body)}
                   </Text>
                 </Card>
               </View>
@@ -161,16 +163,16 @@ export default function IntroScreen() {
           ))}
         </View>
         <Button
-          label={page === 2 ? 'Get Started' : 'Next'}
+          label={page === 2 ? t('intro.getStarted') : t('intro.next')}
           iconRight="arrow-right"
           onPress={() => (page === 2 ? finish('/register') : goTo(page + 1))}
         />
         <Pressable onPress={() => finish('/login')} style={styles.loginRow} accessibilityRole="link">
           <Text variant="caption" color={colors.textSecondary}>
-            Already have an account?{' '}
+            {t('intro.haveAccount')}{' '}
           </Text>
           <Text variant="captionStrong" color={colors.forest700}>
-            Log in
+            {t('intro.logIn')}
           </Text>
         </Pressable>
       </View>
@@ -202,5 +204,5 @@ const styles = StyleSheet.create({
   dots: { flexDirection: 'row', justifyContent: 'center', gap: 6, marginBottom: 6 },
   pageDot: { width: 8, height: 8, borderRadius: 4, backgroundColor: '#C9D8D0' },
   pageDotActive: { width: 26, backgroundColor: colors.forest900 },
-  loginRow: { flexDirection: 'row', justifyContent: 'center' },
+  loginRow: { flexDirection: 'row', justifyContent: 'center', flexWrap: 'wrap' },
 });

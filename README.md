@@ -67,5 +67,6 @@ npm start                     # scan the QR code with Expo Go
 - [API](docs/API.md)
 - [Development guide](docs/DEVELOPMENT_GUIDE.md)
 - [Implementation roadmap](docs/IMPLEMENTATION_ROADMAP.md)
+- [Translations (English, Kinyarwanda, French, Kiswahili)](docs/TRANSLATIONS.md)
 - [Design assets guide](design/README.md)
 - [Screen flow](design/SCREEN_FLOW.md)

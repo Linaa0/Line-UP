@@ -1,5 +1,6 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
 
+import { useI18n } from '@/i18n';
 import { api, setAuthToken, setUnauthorizedHandler } from '@/lib/api';
 import { KEYS, storage } from '@/lib/storage';
 import type { Session, User } from '@/lib/types';
@@ -22,6 +23,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState<User | null>(null);
   const [onboarded, setOnboarded] = useState(false);
+  const { setLang } = useI18n();
 
   const signOut = useCallback(async () => {
     setAuthToken(null);
@@ -59,6 +61,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         await storage.set(KEYS.onboarded, '1');
         setOnboarded(true);
         setUser(session.user);
+        // The account remembers the language; use it on this device too.
+        setLang(session.user.preferences.language);
       },
       signOut,
       async refreshUser() {
@@ -70,7 +74,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setOnboarded(true);
       },
     }),
-    [loading, user, onboarded, signOut],
+    [loading, user, onboarded, signOut, setLang],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

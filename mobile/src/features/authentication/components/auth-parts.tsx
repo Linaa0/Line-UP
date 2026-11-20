@@ -3,41 +3,44 @@ import type { ReactNode } from 'react';
 import { KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { LanguageButton } from '@/components/shared/language-picker';
 import { Logo } from '@/components/shared/logo';
 import { Icon } from '@/components/ui/icon';
 import { Text } from '@/components/ui/text';
 import { TextField } from '@/components/ui/text-field';
 import { colors, spacing } from '@/constants/theme';
+import { useT } from '@/i18n';
 
-/** Shared frame for the account screens: back button, logo, scrollable form, pinned footer. */
+/** Shared frame for the account screens: back button, logo, language, scrollable form, pinned footer. */
 export function AuthFrame({
   children,
   footer,
-  right,
   back = true,
   centerLogo = false,
 }: {
   children: ReactNode;
   footer?: ReactNode;
-  right?: ReactNode;
   back?: boolean;
   centerLogo?: boolean;
 }) {
+  const t = useT();
   return (
     <SafeAreaView style={styles.root}>
       <KeyboardAvoidingView style={styles.flex} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
         <View style={styles.top}>
           {back ? (
-            <Pressable onPress={() => (router.canGoBack() ? router.back() : router.replace('/welcome'))} hitSlop={12} accessibilityLabel="Go back">
+            <Pressable onPress={() => (router.canGoBack() ? router.back() : router.replace('/welcome'))} hitSlop={12} accessibilityLabel={t('common.back')}>
               <Icon name="chevron-left" size={26} />
             </Pressable>
           ) : (
             <View style={styles.side} />
           )}
-          <View style={centerLogo ? styles.logoCenter : styles.logoLeft}>
+          <View style={centerLogo ? styles.logoCenter : styles.logoLeft} pointerEvents="none">
             <Logo size={18} />
           </View>
-          <View style={[styles.side, styles.right]}>{right}</View>
+          <View style={[styles.side, styles.right]}>
+            <LanguageButton tone="dark" />
+          </View>
         </View>
         <ScrollView contentContainerStyle={styles.body} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
           {children}
@@ -76,19 +79,20 @@ export function PhoneField({
   value,
   onChangeText,
   error,
-  label = 'Phone Number',
+  label,
 }: {
   value: string;
   onChangeText: (text: string) => void;
   error?: string;
   label?: string;
 }) {
+  const t = useT();
   return (
     <TextField
-      label={label}
+      label={label ?? t('auth.phone')}
       value={value}
-      onChangeText={(t) => onChangeText(t.replace(/[^\d ]/g, '').slice(0, 13))}
-      placeholder="e.g. 788 123 456"
+      onChangeText={(text) => onChangeText(text.replace(/[^\d ]/g, '').slice(0, 13))}
+      placeholder={t('auth.phonePlaceholder')}
       keyboardType="phone-pad"
       autoComplete="tel"
       textContentType="telephoneNumber"
@@ -122,24 +126,6 @@ export function FooterLink({ prompt, action, onPress }: { prompt: string; action
   );
 }
 
-const styles = StyleSheet.create({
-  root: { flex: 1, backgroundColor: colors.background },
-  flex: { flex: 1 },
-  top: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 20, paddingTop: 6, paddingBottom: 8, gap: 12 },
-  side: { minWidth: 26 },
-  right: { flex: 1, alignItems: 'flex-end' },
-  logoLeft: {},
-  logoCenter: { position: 'absolute', left: 0, right: 0, alignItems: 'center' },
-  body: { paddingHorizontal: spacing.xxl, paddingTop: 14, paddingBottom: 24, gap: 16 },
-  title: { gap: 6, marginBottom: 6 },
-  footer: { borderTopWidth: 1, borderTopColor: colors.divider, paddingVertical: 14, paddingHorizontal: spacing.xxl },
-  footerLink: { flexDirection: 'row', justifyContent: 'center' },
-  prefix: { flexDirection: 'row', alignItems: 'center', gap: 7 },
-  flag: { width: 22, height: 15, borderRadius: 3, overflow: 'hidden' },
-  flagBand: { flex: 1, alignItems: 'flex-end', paddingRight: 3, justifyContent: 'center' },
-  flagSun: { width: 4, height: 4, borderRadius: 2, backgroundColor: '#FAD201' },
-});
-
 /**
  * Demo OTP handed from the screen that requested it to the Verify screen in
  * memory, so it never appears in the screen address (visible in the web preview).
@@ -153,3 +139,21 @@ export function takePendingDemoCode(): string {
   pendingDemoCode = '';
   return code;
 }
+
+const styles = StyleSheet.create({
+  root: { flex: 1, backgroundColor: colors.background },
+  flex: { flex: 1 },
+  top: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 20, paddingTop: 6, paddingBottom: 8, gap: 12 },
+  side: { minWidth: 26 },
+  right: { flex: 1, alignItems: 'flex-end' },
+  logoLeft: {},
+  logoCenter: { position: 'absolute', left: 0, right: 0, alignItems: 'center' },
+  body: { paddingHorizontal: spacing.xxl, paddingTop: 14, paddingBottom: 24, gap: 16 },
+  title: { gap: 6, marginBottom: 6 },
+  footer: { borderTopWidth: 1, borderTopColor: colors.divider, paddingVertical: 14, paddingHorizontal: spacing.xxl },
+  footerLink: { flexDirection: 'row', justifyContent: 'center', flexWrap: 'wrap' },
+  prefix: { flexDirection: 'row', alignItems: 'center', gap: 7 },
+  flag: { width: 22, height: 15, borderRadius: 3, overflow: 'hidden' },
+  flagBand: { flex: 1, alignItems: 'flex-end', paddingRight: 3, justifyContent: 'center' },
+  flagSun: { width: 4, height: 4, borderRadius: 2, backgroundColor: '#FAD201' },
+});

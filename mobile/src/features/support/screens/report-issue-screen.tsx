@@ -14,23 +14,26 @@ import { Text } from '@/components/ui/text';
 import { TextField } from '@/components/ui/text-field';
 import { colors, radius } from '@/constants/theme';
 import { useApi } from '@/hooks/use-api';
+import { type MessageKey, useFormat, useT } from '@/i18n';
 import { api, ApiError } from '@/lib/api';
 import type { Ticket } from '@/lib/types';
-import { formatDay, formatTime } from '@/utils/format';
+import { formatTime } from '@/utils/format';
 
-const CATEGORIES = [
-  { id: 'PAYMENT', label: 'Payment' },
-  { id: 'TICKET', label: 'Ticket / QR' },
-  { id: 'DELAY', label: 'Bus delay' },
-  { id: 'CONDUCT', label: 'Driver conduct' },
-  { id: 'LOST_ITEM', label: 'Lost item' },
-  { id: 'OTHER', label: 'Other' },
-] as const;
+const CATEGORIES: { id: 'PAYMENT' | 'TICKET' | 'DELAY' | 'CONDUCT' | 'LOST_ITEM' | 'OTHER'; label: MessageKey }[] = [
+  { id: 'PAYMENT', label: 'report.payment' },
+  { id: 'TICKET', label: 'report.ticket' },
+  { id: 'DELAY', label: 'report.delay' },
+  { id: 'CONDUCT', label: 'report.conduct' },
+  { id: 'LOST_ITEM', label: 'report.lostItem' },
+  { id: 'OTHER', label: 'report.other' },
+];
 
 /** Design 13-02. Reports are stored and confirmed with a notification. */
 export default function ReportIssueScreen() {
+  const t = useT();
+  const f = useFormat();
   const tickets = useApi<{ active: Ticket[]; past: Ticket[] }>('/tickets');
-  const all = [...(tickets.data?.active ?? []), ...(tickets.data?.past ?? [])].filter((t) => t.state !== 'awaiting_payment');
+  const all = [...(tickets.data?.active ?? []), ...(tickets.data?.past ?? [])].filter((x) => x.state !== 'awaiting_payment');
   const [ticketId, setTicketId] = useState<string | null>(null);
   const [category, setCategory] = useState<(typeof CATEGORIES)[number]['id'] | null>(null);
   const [description, setDescription] = useState('');
@@ -48,7 +51,7 @@ export default function ReportIssueScreen() {
       });
       setSent(report.id.slice(0, 8).toUpperCase());
     } catch (e) {
-      setError(e instanceof ApiError ? e.message : 'Could not send your report.');
+      setError(e instanceof ApiError ? e.message : t('report.couldNotSend'));
     } finally {
       setBusy(false);
     }
@@ -56,12 +59,12 @@ export default function ReportIssueScreen() {
 
   if (sent) {
     return (
-      <Screen header={<ScreenHeader title="Report an Issue" back />}>
+      <Screen header={<ScreenHeader title={t('report.title')} back />}>
         <EmptyState
           icon="check"
-          title="Report sent"
-          message={`Reference ${sent}. Our team usually replies within 24 hours by SMS.`}
-          action={{ label: 'Back to Help Center', onPress: () => router.back() }}
+          title={t('report.sentTitle')}
+          message={t('report.sentBody', { ref: sent })}
+          action={{ label: t('report.backToHelp'), onPress: () => router.back() }}
         />
       </Screen>
     );
@@ -70,7 +73,7 @@ export default function ReportIssueScreen() {
   return (
     <Screen
       scroll
-      header={<ScreenHeader title="Report an Issue" back />}
+      header={<ScreenHeader title={t('report.title')} back />}
       footer={
         <>
           {error && (
@@ -78,28 +81,28 @@ export default function ReportIssueScreen() {
               {error}
             </Text>
           )}
-          <Button label="Submit Report" iconLeft="send" onPress={submit} loading={busy} disabled={!category || description.trim().length < 10} />
+          <Button label={t('report.submit')} iconLeft="send" onPress={submit} loading={busy} disabled={!category || description.trim().length < 10} />
           <Text variant="caption" color={colors.textSecondary} align="center">
-            We usually respond within 24 hours via SMS.
+            {t('report.respond')}
           </Text>
         </>
       }
     >
-      <SectionLabel label="Related trip (optional)" />
+      <SectionLabel label={t('report.relatedTrip')} />
       {all.length ? (
         <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.trips}>
-          {all.slice(0, 6).map((t) => {
-            const on = ticketId === t.id;
+          {all.slice(0, 6).map((x) => {
+            const on = ticketId === x.id;
             return (
-              <Pressable key={t.id} onPress={() => setTicketId(on ? null : t.id)} accessibilityRole="radio" accessibilityState={{ checked: on }}>
+              <Pressable key={x.id} onPress={() => setTicketId(on ? null : x.id)} accessibilityRole="radio" accessibilityState={{ checked: on }}>
                 <Card style={[styles.trip, on && styles.tripOn]}>
-                  <RouteBadge code={t.route.code} size="sm" />
+                  <RouteBadge code={x.route.code} size="sm" />
                   <View>
                     <Text variant="captionStrong">
-                      {shortName(t.from.name)} → {shortName(t.to.name)}
+                      {shortName(x.from.name)} → {shortName(x.to.name)}
                     </Text>
                     <Text variant="caption" color={colors.textSecondary}>
-                      {formatDay(t.departureAt)}, {formatTime(t.departureAt)}
+                      {f.formatDay(x.departureAt)}, {formatTime(x.departureAt)}
                     </Text>
                   </View>
                 </Card>
@@ -109,23 +112,23 @@ export default function ReportIssueScreen() {
         </ScrollView>
       ) : (
         <Text variant="caption" color={colors.textSecondary}>
-          No trips yet. You can still report a general issue.
+          {t('report.noTrips')}
         </Text>
       )}
 
-      <SectionLabel label="What went wrong?" />
+      <SectionLabel label={t('report.whatWrong')} />
       <View style={styles.chips}>
         {CATEGORIES.map((c) => (
-          <Chip key={c.id} label={c.label} selected={category === c.id} onPress={() => setCategory(c.id)} />
+          <Chip key={c.id} label={t(c.label)} selected={category === c.id} onPress={() => setCategory(c.id)} />
         ))}
       </View>
 
-      <SectionLabel label="Describe the issue" />
+      <SectionLabel label={t('report.describe')} />
       <TextField
         value={description}
-        onChangeText={(t) => setDescription(t.slice(0, 500))}
+        onChangeText={(text) => setDescription(text.slice(0, 500))}
         multiline
-        placeholder="Tell us what happened, when, and where."
+        placeholder={t('report.placeholder')}
         hint={`${description.length} / 500`}
       />
     </Screen>

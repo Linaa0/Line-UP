@@ -14,12 +14,15 @@ import { Text } from '@/components/ui/text';
 import { NATIVE_DRIVER } from '@/constants/motion';
 import { colors, fonts, radius, shadow } from '@/constants/theme';
 import { useApi } from '@/hooks/use-api';
+import { useFormat, useT } from '@/i18n';
 import { api, ApiError } from '@/lib/api';
 import type { QueueEntry, Ticket } from '@/lib/types';
-import { formatDay, formatTime } from '@/utils/format';
+import { formatTime } from '@/utils/format';
 
 /** Design 07-02. */
 export default function PaymentSuccessScreen() {
+  const t = useT();
+  const f = useFormat();
   const { ticketId } = useLocalSearchParams<{ ticketId: string }>();
   const { data: ticket } = useApi<Ticket>(`/tickets/${ticketId}`);
   const [scale] = useState(() => new Animated.Value(0.4));
@@ -37,7 +40,7 @@ export default function PaymentSuccessScreen() {
       const entry = await api<QueueEntry>('/queues', { method: 'POST', body: { ticketId } });
       router.replace(`/queue/${entry.id}`);
     } catch (e) {
-      setError(e instanceof ApiError ? e.message : 'Could not join the queue.');
+      setError(e instanceof ApiError ? e.message : t('success.couldNotJoin'));
       setJoining(false);
     }
   };
@@ -56,11 +59,13 @@ export default function PaymentSuccessScreen() {
             </View>
           </Animated.View>
           <Text variant="h1" align="center">
-            Ticket Purchased!
+            {t('success.title')}
           </Text>
-          <Text variant="body" color={colors.textSecondary} align="center">
-            {ticket ? `Your seat on bus ${ticket.route.code} is confirmed.` : 'Your seat is confirmed.'}
-          </Text>
+          {ticket && (
+            <Text variant="body" color={colors.textSecondary} align="center">
+              {t('success.seatConfirmed', { code: ticket.route.code })}
+            </Text>
+          )}
         </View>
 
         {!ticket ? (
@@ -72,29 +77,29 @@ export default function PaymentSuccessScreen() {
                 <View style={styles.code}>
                   <Text style={styles.codeText}>{ticket.route.code}</Text>
                 </View>
-                <View>
+                <View style={styles.shrink}>
                   <RouteLine from={ticket.from.name} to={ticket.to.name} size={15} />
-                  <Text variant="caption" color={colors.textSecondary}>
-                    {ticket.route.kind === 'DIRECT' ? 'Direct route' : 'Via ' + ticket.route.via}
+                  <Text variant="caption" color={colors.textSecondary} numberOfLines={1}>
+                    {ticket.route.kind === 'DIRECT' ? t('success.directRoute') : t('transit.via', { via: ticket.route.via })}
                   </Text>
                 </View>
               </View>
-              <Pill label="Paid" tone="outline" />
+              <Pill label={t('success.paid')} tone="outline" />
             </View>
             <View style={styles.divider} />
             <View style={styles.grid}>
-              <Field label="Ticket ID" value={`#${ticket.code}`} />
-              <Field label="Departure" value={`${formatDay(ticket.departureAt)}, ${formatTime(ticket.departureAt)}`} />
+              <Field label={t('success.ticketId')} value={`#${ticket.code}`} />
+              <Field label={t('success.departure')} value={`${f.formatDay(ticket.departureAt)}, ${formatTime(ticket.departureAt)}`} />
             </View>
             <View style={styles.validity}>
               <Icon name="clock" size={14} color={colors.forest700} />
               <Text variant="captionStrong" color={colors.forest700}>
-                Single journey · valid until {formatTime(ticket.validUntil)}
+                {t('success.validUntil', { time: formatTime(ticket.validUntil) })}
               </Text>
             </View>
             {ticket.payment?.demo && (
               <Text variant="caption" color={colors.muted} align="center">
-                Demo payment · ref {ticket.payment.reference}
+                {t('success.demoRef', { ref: ticket.payment.reference })}
               </Text>
             )}
           </Card>
@@ -106,9 +111,9 @@ export default function PaymentSuccessScreen() {
               {error}
             </Text>
           )}
-          <Button label="View Digital Ticket" iconLeft="maximize" onPress={() => router.replace(`/tickets/${ticketId}`)} />
-          <Button label="Join Virtual Queue" variant="secondary" iconLeft="users" onPress={joinQueue} loading={joining} />
-          <Button label="Back to Home" variant="secondary" onPress={() => router.dismissTo('/home')} style={styles.ghost} />
+          <Button label={t('success.viewTicket')} iconLeft="maximize" onPress={() => router.replace(`/tickets/${ticketId}`)} />
+          <Button label={t('success.joinQueue')} variant="secondary" iconLeft="users" onPress={joinQueue} loading={joining} />
+          <Button label={t('success.backHome')} variant="secondary" onPress={() => router.dismissTo('/home')} style={styles.ghost} />
         </View>
       </SafeAreaView>
     </View>
@@ -136,6 +141,7 @@ const styles = StyleSheet.create({
   loading: { flex: 0, paddingVertical: 40 },
   card: { marginTop: 26, gap: 14, ...shadow.card },
   row: { flexDirection: 'row', alignItems: 'center', gap: 10, flexShrink: 1 },
+  shrink: { flexShrink: 1 },
   rowBetween: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 8 },
   code: { width: 50, height: 50, borderRadius: 14, backgroundColor: colors.mint100, alignItems: 'center', justifyContent: 'center' },
   codeText: { fontFamily: fonts.display, fontSize: 14, color: colors.forest900 },

@@ -11,6 +11,7 @@ import { TextField } from '@/components/ui/text-field';
 import { colors, fonts, radius, shadow } from '@/constants/theme';
 import { RwandaFlag } from '@/features/authentication/components/auth-parts';
 import { setPickerTarget } from '@/features/routes/search-store';
+import { useT } from '@/i18n';
 import { api, ApiError } from '@/lib/api';
 import { useAuth } from '@/lib/auth';
 import type { StopRef, User } from '@/lib/types';
@@ -18,6 +19,7 @@ import { formatPhone, initials } from '@/utils/format';
 
 /** Design 12-02. */
 export default function EditProfileScreen() {
+  const t = useT();
   const { user, setUser } = useAuth();
   const [fullName, setFullName] = useState(user?.fullName ?? '');
   const [email, setEmail] = useState(user?.email ?? '');
@@ -29,7 +31,7 @@ export default function EditProfileScreen() {
 
   const pickStop = () => {
     setPickerTarget(setHomeStop);
-    router.push({ pathname: '/routes/pick-stop', params: { title: 'Home stop' } });
+    router.push({ pathname: '/routes/pick-stop', params: { title: t('editProfile.pickTitle') } });
   };
 
   const save = async () => {
@@ -43,26 +45,26 @@ export default function EditProfileScreen() {
       setUser(updated);
       router.back();
     } catch (e) {
-      setError(e instanceof ApiError ? e.message : 'Could not save your profile.');
+      setError(e instanceof ApiError ? e.message : t('editProfile.couldNotSave'));
     } finally {
       setBusy(false);
     }
   };
 
   return (
-    <Screen scroll header={<ScreenHeader title="Edit Profile" back />} footer={<Button label="Save Changes" onPress={save} loading={busy} />}>
+    <Screen scroll header={<ScreenHeader title={t('editProfile.title')} back />} footer={<Button label={t('editProfile.save')} onPress={save} loading={busy} />}>
       <View style={styles.avatarWrap}>
         <View style={styles.avatar}>
           <Text style={styles.avatarText}>{initials(fullName || user.fullName)}</Text>
         </View>
       </View>
       <View style={styles.form}>
-        <TextField label="Full Name" value={fullName} onChangeText={setFullName} autoCapitalize="words" />
+        <TextField label={t('auth.fullName')} value={fullName} onChangeText={setFullName} autoCapitalize="words" />
         <TextField
-          label="Phone Number"
+          label={t('auth.phone')}
           value={formatPhone(user.phone).replace('+250 ', '')}
           editable={false}
-          hint="Your phone number is your login and can't be changed here."
+          hint={t('editProfile.phoneHint')}
           prefix={
             <View style={styles.prefix}>
               <RwandaFlag />
@@ -71,27 +73,27 @@ export default function EditProfileScreen() {
           }
         />
         <TextField
-          label="Email (optional)"
+          label={t('editProfile.email')}
           value={email}
           onChangeText={setEmail}
           iconLeft="mail"
-          placeholder="For receipts, e.g. you@email.com"
+          placeholder={t('editProfile.emailPlaceholder')}
           keyboardType="email-address"
           autoCapitalize="none"
         />
         <View style={styles.field}>
           <Text variant="bodyStrong" style={styles.label}>
-            Home Stop
+            {t('editProfile.homeStop')}
           </Text>
           <Pressable onPress={pickStop} style={styles.select} accessibilityRole="button">
             <Icon name="map-pin" size={18} color={colors.muted} />
             <Text variant="body" color={homeStop ? colors.text : colors.muted} style={styles.flex}>
-              {homeStop?.name ?? 'Choose your usual stop'}
+              {homeStop?.name ?? t('editProfile.chooseStop')}
             </Text>
             <Icon name="chevron-down" size={18} color={colors.muted} />
           </Pressable>
           <Text variant="caption" color={colors.muted}>
-            Used to show nearby buses on Home.
+            {t('editProfile.homeHint')}
           </Text>
         </View>
         {error && (

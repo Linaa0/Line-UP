@@ -14,12 +14,15 @@ import { Text } from '@/components/ui/text';
 import { colors, fonts, radius, shadow } from '@/constants/theme';
 import { useApi } from '@/hooks/use-api';
 import { useNow } from '@/hooks/use-now';
+import { useFormat, useT } from '@/i18n';
 import { api, ApiError } from '@/lib/api';
 import type { QueueEntry, Ticket } from '@/lib/types';
-import { formatMinutes, formatTime } from '@/utils/format';
+import { formatTime } from '@/utils/format';
 
 /** Design 08-01. The QR encodes the ticket code for the conductor's scanner. */
 export default function TicketScreen() {
+  const t = useT();
+  const f = useFormat();
   const { id } = useLocalSearchParams<{ id: string }>();
   const { data: ticket, error, loading, refresh } = useApi<Ticket>(`/tickets/${id}`, { refreshOnFocus: true });
   const now = useNow();
@@ -29,13 +32,19 @@ export default function TicketScreen() {
   const share = async () => {
     if (!ticket) return;
     await Share.share({
-      message: `LINE-UP ticket #${ticket.code}: bus ${ticket.route.code} ${ticket.from.name} → ${ticket.to.name}, departs ${formatTime(ticket.departureAt)}.`,
+      message: t('ticket.shareMessage', {
+        code: ticket.code,
+        route: ticket.route.code,
+        from: ticket.from.name,
+        to: ticket.to.name,
+        time: formatTime(ticket.departureAt),
+      }),
     }).catch(() => undefined);
   };
 
-  const header = <ScreenHeader title="My Ticket" back right={{ icon: 'share-2', label: 'Share ticket', onPress: share }} />;
+  const header = <ScreenHeader title={t('ticket.title')} back right={{ icon: 'share-2', label: t('ticket.share'), onPress: share }} />;
   if (loading) return <Screen header={header}><LoadingState /></Screen>;
-  if (error || !ticket) return <Screen header={header}><ErrorState message={error ?? 'Ticket not found.'} onRetry={refresh} /></Screen>;
+  if (error || !ticket) return <Screen header={header}><ErrorState message={error ?? ''} onRetry={refresh} /></Screen>;
 
   const minutesLeft = Math.max(0, Math.round((new Date(ticket.validUntil).getTime() - now) / 60_000));
   const valid = ticket.state === 'active';
@@ -51,11 +60,20 @@ export default function TicketScreen() {
       const entry = await api<QueueEntry>('/queues', { method: 'POST', body: { ticketId: ticket.id } });
       router.push(`/queue/${entry.id}`);
     } catch (e) {
-      setJoinError(e instanceof ApiError ? e.message : 'Could not join the queue.');
+      setJoinError(e instanceof ApiError ? e.message : t('success.couldNotJoin'));
     } finally {
       setJoining(false);
     }
   };
+
+  const status =
+    ticket.status === 'BOARDED' && valid
+      ? t('ticket.onBoard')
+      : valid
+        ? t('ticket.validFor', { time: f.formatMinutes(minutesLeft) })
+        : ticket.state === 'used'
+          ? t('tickets.used')
+          : t('tickets.expired');
 
   return (
     <Screen
@@ -69,12 +87,7 @@ export default function TicketScreen() {
                 {joinError}
               </Text>
             )}
-            <Button
-              label={ticket.queueEntryId ? 'View My Queue' : 'Join Virtual Queue'}
-              iconLeft="users"
-              onPress={queue}
-              loading={joining}
-            />
+            <Button label={ticket.queueEntryId ? t('ticket.viewQueue') : t('ticket.joinQueue')} iconLeft="users" onPress={queue} loading={joining} />
           </>
         ) : undefined
       }
@@ -82,18 +95,18 @@ export default function TicketScreen() {
       <View style={styles.pass}>
         <View style={styles.passTop}>
           <View style={styles.rowBetween}>
-            <Pill label="LINE-UP Pass" tone="outline" />
+            <Pill label={t('ticket.pass')} tone="outline" />
             <View style={styles.busPill}>
               <View style={styles.liveDot} />
               <Text variant="captionStrong" color="#FFFFFF">
-                Bus {ticket.route.code}
+                {t('ticket.bus', { code: ticket.route.code })}
               </Text>
             </View>
           </View>
           <View style={styles.places}>
             <View style={styles.flex}>
               <Text variant="label" color={colors.muted}>
-                Origin
+                {t('ticket.origin')}
               </Text>
               <Text variant="h2" numberOfLines={1}>
                 {shortName(ticket.from.name)}
@@ -102,7 +115,7 @@ export default function TicketScreen() {
             <Icon name="arrow-right" size={22} color={colors.emerald} />
             <View style={[styles.flex, styles.right]}>
               <Text variant="label" color={colors.muted}>
-                Destination
+                {t('ticket.destination')}
               </Text>
               <Text variant="h2" numberOfLines={1}>
                 {shortName(ticket.to.name)}
@@ -121,13 +134,7 @@ export default function TicketScreen() {
           <View style={styles.validRow}>
             <Icon name={valid ? 'clock' : 'x-circle'} size={14} color={valid ? colors.emerald : colors.muted} />
             <Text variant="captionStrong" color={valid ? colors.emerald : colors.muted}>
-              {ticket.status === 'BOARDED' && valid
-                ? 'On board · enjoy your trip'
-                : valid
-                  ? `Valid for: ${formatMinutes(minutesLeft)}`
-                  : ticket.state === 'used'
-                    ? 'Used'
-                    : 'Expired'}
+              {status}
             </Text>
           </View>
         </View>
@@ -139,14 +146,14 @@ export default function TicketScreen() {
         </View>
 
         <View style={styles.passBottom}>
-          <Info label="Passenger" value={ticket.passenger.split(' ')[0]} />
-          <Info label="Departure" value={ticket.from.bay ?? shortName(ticket.from.name)} />
-          <Info label="Boarding" value={formatTime(ticket.departureAt)} />
+          <Info label={t('ticket.passenger')} value={ticket.passenger.split(' ')[0]} />
+          <Info label={t('ticket.departure')} value={f.bay(ticket.from.bay) ?? shortName(ticket.from.name)} />
+          <Info label={t('ticket.boarding')} value={formatTime(ticket.departureAt)} />
         </View>
       </View>
 
       <Text variant="caption" color={colors.textSecondary} align="center" style={styles.note}>
-        Show this QR code to the conductor or at the turnstile. Turn up your screen brightness for faster scanning.
+        {t('ticket.note')}
       </Text>
     </Screen>
   );
@@ -155,7 +162,7 @@ export default function TicketScreen() {
 function Info({ label, value }: { label: string; value: string }) {
   return (
     <View style={styles.info}>
-      <Text variant="label" color={colors.muted}>
+      <Text variant="label" color={colors.muted} numberOfLines={1}>
         {label}
       </Text>
       <Text variant="bodyStrong" numberOfLines={1}>
@@ -168,7 +175,7 @@ function Info({ label, value }: { label: string; value: string }) {
 const styles = StyleSheet.create({
   flex: { flex: 1 },
   right: { alignItems: 'flex-end' },
-  rowBetween: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
+  rowBetween: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 8 },
   pass: { backgroundColor: colors.card, borderRadius: radius.xxl, ...shadow.raised },
   passTop: { padding: 20, gap: 16 },
   busPill: { flexDirection: 'row', alignItems: 'center', gap: 6, backgroundColor: colors.emerald, borderRadius: radius.full, paddingHorizontal: 12, paddingVertical: 5 },

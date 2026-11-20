@@ -30,7 +30,7 @@ export type User = {
   phoneVerified: boolean;
   homeStop: StopRef | null;
   preferences: {
-    language: 'rw' | 'en' | 'fr';
+    language: 'en' | 'rw' | 'fr' | 'sw';
     notifyArrivals: boolean;
     notifyQueue: boolean;
     notifyReceipts: boolean;

@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Text } from '@/components/ui/text';
 import { TextField } from '@/components/ui/text-field';
 import { colors } from '@/constants/theme';
+import { useT } from '@/i18n';
 import { api, ApiError } from '@/lib/api';
 import { useAuth } from '@/lib/auth';
 import type { Session } from '@/lib/types';
@@ -14,6 +15,7 @@ import { AuthFrame, AuthTitle, FooterLink, PhoneField, setPendingDemoCode, toE16
 
 /** Design 02-03. */
 export default function LoginScreen() {
+  const t = useT();
   const { signIn } = useAuth();
   const [phone, setPhone] = useState('');
   const [password, setPassword] = useState('');
@@ -22,7 +24,7 @@ export default function LoginScreen() {
 
   const submit = async () => {
     if (phone.replace(/\D/g, '').length < 9 || !password) {
-      setError('Enter your phone number and password.');
+      setError(t('auth.enterBoth'));
       return;
     }
     setBusy(true);
@@ -34,12 +36,9 @@ export default function LoginScreen() {
     } catch (e) {
       if (e instanceof ApiError && e.code === 'PHONE_NOT_VERIFIED') {
         setPendingDemoCode(typeof e.data?.demoCode === 'string' ? e.data.demoCode : undefined);
-        router.push({
-          pathname: '/verify',
-          params: { phone: String(e.data?.phone ?? toE164(phone)), purpose: 'register' },
-        });
+        router.push({ pathname: '/verify', params: { phone: String(e.data?.phone ?? toE164(phone)), purpose: 'register' } });
       } else {
-        setError(e instanceof ApiError ? e.message : 'Could not log in.');
+        setError(e instanceof ApiError ? e.message : t('auth.couldNotLogin'));
       }
     } finally {
       setBusy(false);
@@ -47,13 +46,21 @@ export default function LoginScreen() {
   };
 
   return (
-    <AuthFrame centerLogo footer={<FooterLink prompt="Don't have an account?" action="Sign up" onPress={() => router.replace('/register')} />}>
-      <AuthTitle title="Welcome Back" subtitle="Log in to your account" />
+    <AuthFrame centerLogo footer={<FooterLink prompt={t('auth.noAccount')} action={t('auth.signUp')} onPress={() => router.replace('/register')} />}>
+      <AuthTitle title={t('auth.welcomeBack')} subtitle={t('auth.loginSubtitle')} />
       <PhoneField value={phone} onChangeText={setPhone} />
-      <TextField label="Password" value={password} onChangeText={setPassword} placeholder="Your password" password autoComplete="current-password" onSubmitEditing={submit} />
+      <TextField
+        label={t('auth.password')}
+        value={password}
+        onChangeText={setPassword}
+        placeholder={t('auth.yourPassword')}
+        password
+        autoComplete="current-password"
+        onSubmitEditing={submit}
+      />
       <Pressable onPress={() => router.push('/forgot-password')} style={styles.forgot} accessibilityRole="link">
         <Text variant="captionStrong" color={colors.forest700}>
-          Forgot password?
+          {t('auth.forgot')}
         </Text>
       </Pressable>
       {error && (
@@ -61,7 +68,7 @@ export default function LoginScreen() {
           {error}
         </Text>
       )}
-      <Button label="Log In" onPress={submit} loading={busy} />
+      <Button label={t('auth.logIn')} onPress={submit} loading={busy} />
     </AuthFrame>
   );
 }

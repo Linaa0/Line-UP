@@ -7,11 +7,13 @@ import { BusMark } from '@/components/shared/logo';
 import { Text } from '@/components/ui/text';
 import { NATIVE_DRIVER } from '@/constants/motion';
 import { colors, fonts } from '@/constants/theme';
+import { useT } from '@/i18n';
 
 const city = require('@/assets/images/photos/kigali-city.png');
 
 /** Design 01-01: branded splash shown briefly at launch, then fades into the app. */
 export function AnimatedSplash({ onFinish }: { onFinish: () => void }) {
+  const t = useT();
   const [opacity] = useState(() => new Animated.Value(1));
   const [enter] = useState(() => new Animated.Value(0));
   const [progress] = useState(() => new Animated.Value(0));
@@ -53,7 +55,7 @@ export function AnimatedSplash({ onFinish }: { onFinish: () => void }) {
           <Text style={styles.word}>
             LINE-<Text style={[styles.word, { color: colors.mint }]}>UP</Text>
           </Text>
-          <Text style={styles.tagline}>Smarter Transport. A Better Kigali.</Text>
+          <Text style={styles.tagline}>{t('splash.tagline')}</Text>
         </Animated.View>
       </View>
 
@@ -63,7 +65,7 @@ export function AnimatedSplash({ onFinish }: { onFinish: () => void }) {
             style={[styles.bar, { width: progress.interpolate({ inputRange: [0, 1], outputRange: ['0%', '100%'] }) }]}
           />
         </View>
-        <Text style={styles.loading}>Line-Up is on its way</Text>
+        <Text style={styles.loading}>{t('splash.loading')}</Text>
       </View>
     </Animated.View>
   );

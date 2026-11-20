@@ -15,20 +15,23 @@ import { Text } from '@/components/ui/text';
 import { colors, radius, shadow } from '@/constants/theme';
 import { useApi } from '@/hooks/use-api';
 import { useNow } from '@/hooks/use-now';
+import { type MessageKey, useFormat, useT } from '@/i18n';
 import type { RouteSummary, StopRef } from '@/lib/types';
-import { formatTime, KIND_LABEL } from '@/utils/format';
+import { formatTime } from '@/utils/format';
 
 import { clearRecent, loadRecent, pushRecent, type RecentSearch, searchStore, setPickerTarget, useSearchSelection } from '../search-store';
 
-const WHEN = [
-  { label: 'Leave now', offset: 0 },
-  { label: 'In 30 min', offset: 30 },
-  { label: 'In 1 hour', offset: 60 },
-  { label: 'In 2 hours', offset: 120 },
+const WHEN: { label: MessageKey; offset: number }[] = [
+  { label: 'find.leaveNow', offset: 0 },
+  { label: 'find.in30', offset: 30 },
+  { label: 'find.in60', offset: 60 },
+  { label: 'find.in120', offset: 120 },
 ];
 
 /** Design 04-01. */
 export default function FindRouteScreen() {
+  const t = useT();
+  const f = useFormat();
   const { from, to } = useSearchSelection();
   const [when, setWhen] = useState(0);
   const now = useNow();
@@ -43,7 +46,7 @@ export default function FindRouteScreen() {
 
   const pick = (field: 'from' | 'to') => {
     setPickerTarget((stop) => searchStore.set({ [field]: stop }));
-    router.push({ pathname: '/routes/pick-stop', params: { title: field === 'from' ? 'Leaving from' : 'Going to' } });
+    router.push({ pathname: '/routes/pick-stop', params: { title: field === 'from' ? t('find.leavingFrom') : t('find.goingTo') } });
   };
 
   const search = async (a: StopRef | null = from, b: StopRef | null = to) => {
@@ -54,29 +57,29 @@ export default function FindRouteScreen() {
   };
 
   return (
-    <Screen scroll edges={['top']} header={<ScreenHeader title="Find a Route" eyebrow="LINE-UP" />}>
+    <Screen scroll edges={['top']} header={<ScreenHeader title={t('find.title')} eyebrow="LINE-UP" />}>
       <Card style={styles.form}>
-        <StopField label="From" stop={from} dot={colors.forest900} onPress={() => pick('from')} />
-        <Pressable onPress={() => searchStore.swap()} style={styles.swap} accessibilityLabel="Swap from and to" hitSlop={6}>
+        <StopField label={t('find.from')} placeholder={t('find.chooseStop')} stop={from} dot={colors.forest900} onPress={() => pick('from')} />
+        <Pressable onPress={() => searchStore.swap()} style={styles.swap} accessibilityLabel={t('find.swap')} hitSlop={6}>
           <Icon name="repeat" size={16} color={colors.forest900} />
         </Pressable>
-        <StopField label="To" stop={to} dot={colors.danger} icon="map-pin" onPress={() => pick('to')} />
+        <StopField label={t('find.to')} placeholder={t('find.chooseStop')} stop={to} dot={colors.danger} icon="map-pin" onPress={() => pick('to')} />
         <View style={styles.when}>
           {WHEN.map((w, i) => (
-            <Chip key={w.label} label={w.label} selected={i === when} onPress={() => setWhen(i)} />
+            <Chip key={w.label} label={t(w.label)} selected={i === when} onPress={() => setWhen(i)} />
           ))}
         </View>
         {when > 0 && (
           <Text variant="caption" color={colors.textSecondary}>
-            Showing buses from {formatTime(new Date(now + WHEN[when].offset * 60_000))}
+            {t('find.showingFrom', { time: formatTime(new Date(now + WHEN[when].offset * 60_000)) })}
           </Text>
         )}
-        <Button label="Search Routes" iconLeft="search" onPress={() => search()} disabled={!from || !to || from.id === to.id} />
+        <Button label={t('find.search')} iconLeft="search" onPress={() => search()} disabled={!from || !to || from.id === to.id} />
       </Card>
 
       {!!saved.data?.length && (
         <>
-          <SectionLabel label="Saved routes" />
+          <SectionLabel label={t('find.saved')} />
           <Card padding={0}>
             {saved.data.map((r, i) => (
               <Pressable
@@ -90,7 +93,7 @@ export default function FindRouteScreen() {
                     {shortName(r.origin.name)} → {shortName(r.terminus.name)}
                   </Text>
                   <Text variant="caption" color={colors.textSecondary}>
-                    {KIND_LABEL[r.kind]} · every {r.frequencyMin} min
+                    {f.kind(r.kind)} · {t('find.every', { count: r.frequencyMin })}
                   </Text>
                 </View>
                 <Icon name="chevron-right" size={18} color="#B6C2BC" />
@@ -101,12 +104,12 @@ export default function FindRouteScreen() {
       )}
 
       <SectionLabel
-        label="Recent searches"
+        label={t('find.recent')}
         action={
           recent.length ? (
             <Pressable onPress={() => clearRecent().then(() => setRecent([]))} hitSlop={8}>
               <Text variant="captionStrong" color={colors.forest700}>
-                Clear
+                {t('find.clear')}
               </Text>
             </Pressable>
           ) : undefined
@@ -135,7 +138,7 @@ export default function FindRouteScreen() {
         </Card>
       ) : (
         <Text variant="caption" color={colors.textSecondary} style={styles.hint}>
-          Your searches will appear here. Try Nyabugogo → Kicukiro Centre.
+          {t('find.recentEmpty')}
         </Text>
       )}
     </Screen>
@@ -144,12 +147,14 @@ export default function FindRouteScreen() {
 
 function StopField({
   label,
+  placeholder,
   stop,
   dot,
   icon,
   onPress,
 }: {
   label: string;
+  placeholder: string;
   stop: StopRef | null;
   dot: string;
   icon?: 'map-pin';
@@ -163,7 +168,7 @@ function StopField({
           {label}
         </Text>
         <Text variant="bodyStrong" color={stop ? colors.text : colors.muted} numberOfLines={1}>
-          {stop?.name ?? 'Choose a stop'}
+          {stop?.name ?? placeholder}
         </Text>
       </View>
       <Icon name="chevron-right" size={18} color="#B6C2BC" />

@@ -5,6 +5,7 @@ import { Pressable, StyleSheet, View } from 'react-native';
 import { Icon, type IconName } from '@/components/ui/icon';
 import { Text } from '@/components/ui/text';
 import { colors, spacing } from '@/constants/theme';
+import { useT } from '@/i18n';
 
 type HeaderAction = { icon: IconName; label: string; onPress: () => void };
 
@@ -37,12 +38,13 @@ function isAction(value: unknown): value is HeaderAction {
 
 /** Centered title with round icon buttons on either side, as in most designs. */
 export function ScreenHeader({ title, eyebrow, back = false, right }: ScreenHeaderProps) {
+  const t = useT();
   const onBack = typeof back === 'function' ? back : () => router.back();
 
   return (
     <View style={styles.header}>
       <View style={styles.side}>
-        {back && <HeaderIconButton icon="chevron-left" label="Go back" onPress={onBack} />}
+        {back && <HeaderIconButton icon="chevron-left" label={t('common.back')} onPress={onBack} />}
       </View>
       <View style={styles.titleBlock}>
         <Text variant="title" align="center" accessibilityRole="header" numberOfLines={1}>

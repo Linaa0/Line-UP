@@ -46,6 +46,8 @@ Re-render design mockups: `node design/mockups/render.mjs` (needs Edge/Chrome).
   - Build screens from the primitives in `src/components/ui/` (Button, TextField, Card, Pill,
     Chip, IconTile, ListRow, Toggle, Text) and `Screen` / `ScreenHeader`; icons are Feather via `Icon`.
   - Preview components at `/dev/ui-kit` (dev builds only).
+  - All user-facing text goes through `t()` from `@/i18n` (never hard-coded). Add every new
+    key to `en.ts`, `rw.ts`, `fr.ts` and `sw.ts`; dates/durations via `useFormat()`. See `docs/TRANSLATIONS.md`.
   - Import alias `@/*` → `src/*`.
 - Backend:
   - One Nest module per domain folder (controller → service → PrismaService).
@@ -54,6 +56,8 @@ Re-render design mockups: `node design/mockups/render.mjs` (needs Edge/Chrome).
   - Prisma 7: client generated to `src/generated/prisma` (git-ignored); CLI config in `prisma.config.ts`.
   - Add every new env var to `src/config/env.validation.ts` and `backend/.env.example`.
   - Routes are under `/api/v1`.
+  - User-facing error messages and notification templates are translated in `src/common/i18n.ts`
+    (en, rw, fr, sw; picked from Accept-Language). Add new messages there.
 - Implement screens by comparing against `design/figma-references/individual-screens/`.
   Copy production assets from `design/exported-assets/` into `mobile/assets/images/`.
 - No secrets in committed files; only `*.example` env files are tracked.
