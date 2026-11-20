@@ -38,9 +38,10 @@ export class AuthService {
       throw new ConflictException('An account with this phone number already exists. Log in instead.');
     }
     const passwordHash = await hashPassword(input.password);
+    const language = input.language ?? 'en';
     const user = existing
-      ? await this.prisma.user.update({ where: { id: existing.id }, data: { fullName: input.fullName, passwordHash } })
-      : await this.prisma.user.create({ data: { fullName: input.fullName, phone: input.phone, passwordHash } });
+      ? await this.prisma.user.update({ where: { id: existing.id }, data: { fullName: input.fullName, passwordHash, language } })
+      : await this.prisma.user.create({ data: { fullName: input.fullName, phone: input.phone, passwordHash, language } });
     return this.issueOtp(user.id, user.phone, { enforceCooldown: false });
   }
 
@@ -59,11 +60,7 @@ export class AuthService {
       ? user
       : await this.prisma.user.update({ where: { id: user.id }, data: { phoneVerified: true } });
     if (!user.phoneVerified) {
-      await this.notifications.create(user.id, {
-        type: 'ACCOUNT',
-        title: `Murakaza neza, ${verified.fullName.split(' ')[0]}!`,
-        body: 'Your LINE-UP account is ready. Search a route to buy your first ticket.',
-      });
+      await this.notifications.create(user.id, 'ACCOUNT', 'welcome', { name: verified.fullName.split(' ')[0] });
     }
     return this.session(verified.id);
   }

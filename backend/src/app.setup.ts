@@ -1,5 +1,6 @@
 import { type INestApplication, StandardSchemaValidationPipe, VersioningType } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { I18nExceptionFilter } from './common/i18n.filter.js';
 import type { Env } from './config/env.validation.js';
 
 /** Local and home-network addresses used by Expo during development (web on :8081, :3003, …). */
@@ -32,5 +33,7 @@ export function configureApp(app: INestApplication): void {
   });
   // Validates @Body/@Query/@Param values against their zod schemas.
   app.useGlobalPipes(new StandardSchemaValidationPipe());
+  // Error messages in the client's language (Accept-Language).
+  app.useGlobalFilters(new I18nExceptionFilter());
   app.enableShutdownHooks();
 }

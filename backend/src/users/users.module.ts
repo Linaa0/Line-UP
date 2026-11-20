@@ -5,6 +5,7 @@ import { AuthGuard, UserId } from '../auth/auth.guard.js';
 import { addMinutes } from '../common/kigali-time.js';
 import { PrismaService } from '../database/prisma.service.js';
 import { TransitService } from '../routes/transit.service.js';
+import { LANGUAGES } from '../common/i18n.js';
 import { toUserView } from './user.view.js';
 
 const profileSchema = z.object({
@@ -14,7 +15,7 @@ const profileSchema = z.object({
 });
 
 const preferencesSchema = z.object({
-  language: z.enum(['rw', 'en', 'fr']).optional(),
+  language: z.enum(LANGUAGES).optional(),
   notifyArrivals: z.boolean().optional(),
   notifyQueue: z.boolean().optional(),
   notifyReceipts: z.boolean().optional(),
