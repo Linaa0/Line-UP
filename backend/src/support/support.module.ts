@@ -26,11 +26,7 @@ export class SupportController {
       if (!owns) throw new NotFoundException('Ticket not found.');
     }
     const report = await this.prisma.supportReport.create({ data: { userId, ...body } });
-    await this.notifications.create(userId, {
-      type: 'ALERT',
-      title: 'We received your report',
-      body: `Reference ${report.id.slice(0, 8).toUpperCase()}. Our team will follow up by SMS.`,
-    });
+    await this.notifications.create(userId, 'ALERT', 'report', { ref: report.id.slice(0, 8).toUpperCase() });
     return report;
   }
 

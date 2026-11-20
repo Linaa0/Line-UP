@@ -2,6 +2,8 @@ import { Controller, Get, Global, HttpCode, Module, Param, Post, UseGuards } fro
 import { z } from 'zod';
 
 import { AuthGuard, UserId } from '../auth/auth.guard.js';
+import type { Lang } from '../common/i18n.js';
+import { ReqLang } from '../common/lang.decorator.js';
 import { NotificationsService } from './notifications.service.js';
 
 @Controller('notifications')
@@ -10,8 +12,8 @@ export class NotificationsController {
   constructor(private readonly notifications: NotificationsService) {}
 
   @Get()
-  list(@UserId() userId: string) {
-    return this.notifications.list(userId);
+  list(@UserId() userId: string, @ReqLang() lang: Lang) {
+    return this.notifications.list(userId, lang);
   }
 
   @Post('read-all')

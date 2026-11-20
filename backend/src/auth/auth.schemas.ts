@@ -1,5 +1,6 @@
 import { z } from 'zod';
 
+import { LANGUAGES } from '../common/i18n.js';
 import { rwandaPhone } from '../common/phone.js';
 
 const password = z
@@ -13,6 +14,8 @@ export const registerSchema = z.object({
   fullName: z.string().trim().min(2, 'Enter your full name').max(80),
   phone: rwandaPhone,
   password,
+  /** The language chosen in the app before signing up. */
+  language: z.enum(LANGUAGES).optional(),
 });
 
 export const phoneSchema = z.object({ phone: rwandaPhone });

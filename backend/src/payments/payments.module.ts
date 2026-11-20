@@ -53,10 +53,10 @@ export class PaymentsService {
       this.prisma.ticket.update({ where: { id: ticket.id }, data: { status: 'PAID' } }),
     ]);
 
-    await this.notifications.create(userId, {
-      type: 'PAYMENT',
-      title: 'Payment successful',
-      body: `RWF ${ticket.fare} paid with ${METHOD_NAMES[input.method]} (demo) for ticket #${ticket.code}.`,
+    await this.notifications.create(userId, 'PAYMENT', 'payment', {
+      fare: ticket.fare,
+      method: METHOD_NAMES[input.method],
+      code: ticket.code,
     });
 
     return { demo: true, ticket: await this.tickets.get(userId, ticket.id) };

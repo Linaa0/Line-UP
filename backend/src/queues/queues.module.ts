@@ -49,10 +49,13 @@ export class QueuesService {
       },
     });
     const view = await this.view(userId, entry.id);
-    await this.notifications.create(userId, {
-      type: 'QUEUE',
-      title: `You're #${view.position} in the queue`,
-      body: `Bus ${view.route.code} to ${view.to.name} leaves ${view.from.name}${view.from.bay ? `, ${view.from.bay}` : ''} at ${view.departureLabel}.`,
+    await this.notifications.create(userId, 'QUEUE', 'queue', {
+      position: view.position,
+      route: view.route.code,
+      to: view.to.name,
+      from: view.from.name,
+      bay: view.from.bay ?? '',
+      time: view.departureLabel,
     });
     return view;
   }
