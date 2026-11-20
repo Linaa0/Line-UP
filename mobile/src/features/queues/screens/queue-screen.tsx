@@ -18,12 +18,17 @@ import { SectionLabel } from '@/components/ui/section-label';
 import { Text } from '@/components/ui/text';
 import { colors, fonts, radius, shadow, spacing } from '@/constants/theme';
 import { useApi } from '@/hooks/use-api';
+import { type MessageKey, useFormat, useT } from '@/i18n';
 import { api, ApiError } from '@/lib/api';
 import type { QueueEntry } from '@/lib/types';
 import { formatTime } from '@/utils/format';
 
+const STAGES: MessageKey[] = ['queue.waiting', 'queue.boarding', 'queue.onBus'];
+
 /** Designs 10-01 (waiting), 10-02 (boarding) and 09-02 (on the bus), chosen by queue status. */
 export default function QueueScreen() {
+  const t = useT();
+  const f = useFormat();
   const { id } = useLocalSearchParams<{ id: string }>();
   const { data, error, loading, refresh, setData } = useApi<QueueEntry>(`/queues/${id}`, { pollMs: 15_000, refreshOnFocus: true });
   const [boarding, setBoarding] = useState(false);
@@ -35,30 +40,32 @@ export default function QueueScreen() {
     try {
       setData(await api<QueueEntry>(`/queues/${id}/board`, { method: 'POST' }));
     } catch (e) {
-      setBoardError(e instanceof ApiError ? e.message : 'Could not update your trip.');
+      setBoardError(e instanceof ApiError ? e.message : t('queue.couldNotUpdate'));
     } finally {
       setBoarding(false);
     }
   };
 
   const ticketButton = (variant: 'primary' | 'secondary' = 'primary') =>
-    data && <Button label="Show Digital Ticket" iconLeft="maximize" variant={variant} onPress={() => router.push(`/tickets/${data.ticket.id}`)} />;
+    data && <Button label={t('queue.showTicket')} iconLeft="maximize" variant={variant} onPress={() => router.push(`/tickets/${data.ticket.id}`)} />;
 
-  if (loading) return <Screen header={<ScreenHeader title="Virtual Queue" back />}><LoadingState /></Screen>;
-  if (error || !data) return <Screen header={<ScreenHeader title="Virtual Queue" back />}><ErrorState message={error ?? ''} onRetry={refresh} /></Screen>;
+  if (loading) return <Screen header={<ScreenHeader title={t('queue.title')} back />}><LoadingState /></Screen>;
+  if (error || !data) return <Screen header={<ScreenHeader title={t('queue.title')} back />}><ErrorState message={error ?? ''} onRetry={refresh} /></Screen>;
 
   if (data.status === 'ON_BUS' || data.status === 'COMPLETED') return <TripInProgress q={data} />;
+
+  const bay = f.bay(data.from.bay);
 
   if (data.status === 'BOARDING') {
     return (
       <Screen
         scroll
-        header={<ScreenHeader title="Boarding Ready" eyebrow="LINE-UP" back />}
+        header={<ScreenHeader title={t('queue.boardingTitle')} eyebrow="LINE-UP" back />}
         footer={
           <>
             {boardError && <Text variant="caption" color={colors.danger} align="center">{boardError}</Text>}
             {ticketButton()}
-            <Button label="I'm on the bus" variant="secondary" iconLeft="check-circle" onPress={board} loading={boarding} />
+            <Button label={t('queue.onTheBus')} variant="secondary" iconLeft="check-circle" onPress={board} loading={boarding} />
           </>
         }
       >
@@ -68,34 +75,34 @@ export default function QueueScreen() {
             <View style={styles.row}>
               <View style={styles.liveDot} />
               <Text variant="bodyStrong" color={colors.forest700}>
-                Vehicle approaching
+                {t('queue.vehicleApproaching')}
               </Text>
             </View>
-            <Pill label={data.minutesToDeparture <= 0 ? 'Departing now' : `Departs in ${data.minutesToDeparture} min`} />
+            <Pill label={data.minutesToDeparture <= 0 ? t('queue.departingNow') : t('queue.departsIn', { count: data.minutesToDeparture })} />
           </View>
         </Card>
         <Card style={styles.arriving}>
           <View style={styles.flex}>
-            <Text variant="h2">Your bus is arriving!</Text>
+            <Text variant="h2">{t('queue.arriving')}</Text>
             <View style={styles.row}>
               <RouteBadge code={data.route.code} size="sm" />
-              <Text variant="caption" color={colors.textSecondary}>
+              <Text variant="caption" color={colors.textSecondary} style={styles.shrink}>
                 {shortName(data.from.name)} → {shortName(data.to.name)}
               </Text>
             </View>
           </View>
           <View style={styles.bay}>
             <Text variant="label" color={colors.mint}>
-              Platform
+              {t('queue.platform')}
             </Text>
-            <Text style={styles.bayText}>{data.from.bay ?? 'Main'}</Text>
+            <Text style={styles.bayText}>{bay ?? t('queue.main')}</Text>
           </View>
         </Card>
-        <SectionLabel label="Boarding instructions" />
+        <SectionLabel label={t('queue.instructions')} />
         <Card style={styles.steps}>
-          <Step n={1} title={`Proceed to ${data.from.bay ?? 'the boarding point'}`} body={`Follow the signs at ${data.from.name}.`} />
-          <Step n={2} title="Have your digital ticket ready" body="Increase screen brightness for faster scanning." />
-          <Step n={3} title="Scan at the turnstile or show the conductor" body="Then tap “I'm on the bus” to start trip tracking." />
+          <Step n={1} title={t('queue.step1', { bay: bay ?? t('queue.boardingPoint') })} body={t('queue.step1Body', { stop: data.from.name })} />
+          <Step n={2} title={t('queue.step2')} body={t('queue.step2Body')} />
+          <Step n={3} title={t('queue.step3')} body={t('queue.step3Body')} />
         </Card>
       </Screen>
     );
@@ -106,14 +113,14 @@ export default function QueueScreen() {
   return (
     <Screen
       scroll
-      header={<ScreenHeader title="Virtual Queue" back />}
+      header={<ScreenHeader title={t('queue.title')} back />}
       footer={
         <>
           {boardError && <Text variant="caption" color={colors.danger} align="center">{boardError}</Text>}
           {ticketButton()}
           <Pressable onPress={board} disabled={boarding} style={styles.link}>
             <Text variant="captionStrong" color={colors.forest700}>
-              {boarding ? 'Updating…' : "Already on the bus? Tap here"}
+              {boarding ? t('queue.updating') : t('queue.alreadyOnBus')}
             </Text>
           </Pressable>
         </>
@@ -128,40 +135,39 @@ export default function QueueScreen() {
 
       <LinearGradient colors={['#B8F0D5', '#DDF8EA']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.hero}>
         <Text variant="label" color={colors.forest700}>
-          Your queue number
+          {t('queue.yourNumber')}
         </Text>
         <Text style={styles.number}>#{data.position}</Text>
-        <Text variant="caption" color={colors.forest700}>
-          Bus {data.route.code} • {shortName(data.from.name)}
-          {data.from.bay ? ` ${data.from.bay}` : ''}
+        <Text variant="caption" color={colors.forest700} align="center">
+          {t('queue.busAt', { code: data.route.code, stop: `${shortName(data.from.name)}${bay ? ` ${bay}` : ''}` })}
         </Text>
         <View style={styles.wait}>
           <Icon name="clock" size={18} color={colors.forest700} />
           <View>
             <Text variant="label" color={colors.muted}>
-              Estimated wait
+              {t('queue.estimatedWait')}
             </Text>
-            <Text variant="title">~ {Math.max(0, data.minutesToDeparture)} min</Text>
+            <Text variant="title">{t('queue.waitMin', { count: Math.max(0, data.minutesToDeparture) })}</Text>
           </View>
         </View>
       </LinearGradient>
 
       <Card style={styles.stepper}>
         <Text variant="label" color={colors.muted}>
-          Boarding status
+          {t('queue.status')}
         </Text>
         <View style={styles.stepperRow}>
-          {['Waiting', 'Boarding', 'On Bus'].map((label, i) => (
+          {STAGES.map((label, i) => (
             <View key={label} style={styles.stepperItem}>
               <View style={styles.stepperDotRow}>
                 {i > 0 && <View style={[styles.stepperLine, i <= stage && styles.stepperLineOn]} />}
                 <View style={[styles.stepperDot, i <= stage && styles.stepperDotOn]}>
-                  {i < stage || i === stage ? <Icon name="check" size={14} color="#FFFFFF" /> : <Text variant="captionStrong" color={colors.muted}>{i + 1}</Text>}
+                  {i <= stage ? <Icon name="check" size={14} color="#FFFFFF" /> : <Text variant="captionStrong" color={colors.muted}>{i + 1}</Text>}
                 </View>
-                {i < 2 && <View style={[styles.stepperLine, i < stage && styles.stepperLineOn]} />}
+                {i < STAGES.length - 1 && <View style={[styles.stepperLine, i < stage && styles.stepperLineOn]} />}
               </View>
-              <Text variant="captionStrong" color={i <= stage ? colors.forest700 : colors.muted}>
-                {label}
+              <Text variant="captionStrong" color={i <= stage ? colors.forest700 : colors.muted} align="center">
+                {t(label)}
               </Text>
             </View>
           ))}
@@ -169,25 +175,27 @@ export default function QueueScreen() {
       </Card>
 
       <Card padding={0}>
-        <InfoRow icon="users" label="People ahead in line" value={`${data.peopleAhead} passenger${data.peopleAhead === 1 ? '' : 's'}`} first />
-        <InfoRow icon="clock" label="Next bus departure" value={data.departureLabel} />
-        <InfoRow icon="home" label="Boarding gate" value={data.from.bay ?? 'Main stop'} highlight />
+        <InfoRow icon="users" label={t('queue.peopleAhead')} value={t('queue.passengers', { count: data.peopleAhead })} first />
+        <InfoRow icon="clock" label={t('queue.nextDeparture')} value={data.departureLabel} />
+        <InfoRow icon="home" label={t('queue.gate')} value={bay ?? t('queue.mainStop')} highlight />
       </Card>
     </Screen>
   );
 }
 
 function TripInProgress({ q }: { q: QueueEntry }) {
+  const t = useT();
+  const f = useFormat();
   const done = q.status === 'COMPLETED';
   const nextIdx = q.journey.findIndex((s) => !s.passed);
   if (done) {
     return (
-      <Screen header={<ScreenHeader title="Trip Complete" back />}>
+      <Screen header={<ScreenHeader title={t('trip.completeTitle')} back />}>
         <EmptyState
           icon="flag"
-          title="You've arrived"
-          message={`Thanks for riding ${q.route.code} to ${q.to.name}. Murakoze!`}
-          action={{ label: 'Back to Home', onPress: () => router.dismissTo('/home') }}
+          title={t('trip.arrivedTitle')}
+          message={t('trip.arrivedBody', { code: q.route.code, to: q.to.name })}
+          action={{ label: t('trip.backHome'), onPress: () => router.dismissTo('/home') }}
         />
       </Screen>
     );
@@ -198,13 +206,13 @@ function TripInProgress({ q }: { q: QueueEntry }) {
       padded={false}
       header={
         <LinearGradient colors={[colors.forest700, colors.forest900]} style={styles.tripHeader}>
-          <HeaderIconButton icon="chevron-left" label="Go back" onPress={() => router.back()} />
+          <HeaderIconButton icon="chevron-left" label={t('common.back')} onPress={() => router.back()} />
           <View style={styles.flex}>
-            <Text variant="title" color="#FFFFFF">
-              Trip In Progress
+            <Text variant="title" color="#FFFFFF" numberOfLines={1}>
+              {t('trip.title')}
             </Text>
-            <Text variant="caption" color="rgba(255,255,255,0.75)">
-              Estimated from the timetable
+            <Text variant="caption" color="rgba(255,255,255,0.75)" numberOfLines={1}>
+              {t('trip.estimated')}
             </Text>
           </View>
           <View style={styles.codeChip}>
@@ -215,8 +223,8 @@ function TripInProgress({ q }: { q: QueueEntry }) {
       }
       footer={
         <>
-          <Button label="View Route Map" iconLeft="map" onPress={() => router.push('/live-map')} />
-          <Button label="Emergency Support / Help" variant="secondary" iconLeft="alert-circle" onPress={() => router.push('/support')} />
+          <Button label={t('trip.viewMap')} iconLeft="map" onPress={() => router.push('/live-map')} />
+          <Button label={t('trip.emergency')} variant="secondary" iconLeft="alert-circle" onPress={() => router.push('/support')} />
         </>
       }
       contentStyle={styles.tripBody}
@@ -225,13 +233,15 @@ function TripInProgress({ q }: { q: QueueEntry }) {
         <View style={styles.bigCheck}>
           <Icon name="check" size={34} color={colors.emerald} />
         </View>
-        <Text variant="h2">You&apos;re on board!</Text>
-        <Pill label={`${q.route.code} • ${shortName(q.to.name)} ${q.route.kind === 'EXPRESS' ? 'Express' : ''}`.trim()} />
+        <Text variant="h2" align="center">
+          {t('trip.onBoard')}
+        </Text>
+        <Pill label={`${q.route.code} • ${shortName(q.to.name)}${q.route.kind === 'EXPRESS' ? ` ${t('trip.express')}` : ''}`} />
         <View style={styles.divider} />
         <View style={styles.row}>
           <Icon name="clock" size={14} color={colors.textSecondary} />
           <Text variant="caption" color={colors.textSecondary}>
-            Boarded at <Text variant="captionStrong">{q.boardedAt ? formatTime(q.boardedAt) : formatTime(q.departureAt)}</Text>
+            {t('trip.boardedAt')} <Text variant="captionStrong">{q.boardedAt ? formatTime(q.boardedAt) : formatTime(q.departureAt)}</Text>
           </Text>
         </View>
       </Card>
@@ -239,18 +249,18 @@ function TripInProgress({ q }: { q: QueueEntry }) {
       <View style={styles.stats}>
         <Card style={styles.stat}>
           <IconTile name="clock" />
-          <View>
-            <Text variant="label" color={colors.muted}>
-              Remaining
+          <View style={styles.shrink}>
+            <Text variant="label" color={colors.muted} numberOfLines={1}>
+              {t('trip.remaining')}
             </Text>
-            <Text variant="title">{q.remainingMin} min</Text>
+            <Text variant="title">{f.formatMinutes(q.remainingMin)}</Text>
           </View>
         </Card>
         <Card style={styles.stat}>
           <IconTile name="map-pin" />
-          <View>
-            <Text variant="label" color={colors.muted}>
-              Stops left
+          <View style={styles.shrink}>
+            <Text variant="label" color={colors.muted} numberOfLines={1}>
+              {t('trip.stopsLeft')}
             </Text>
             <Text variant="title">{q.journey.filter((s) => !s.passed).length}</Text>
           </View>
@@ -259,17 +269,17 @@ function TripInProgress({ q }: { q: QueueEntry }) {
 
       <Card style={styles.progress}>
         <View style={styles.rowBetween}>
-          <Text variant="label" color={colors.muted}>
-            Journey progress
+          <Text variant="label" color={colors.muted} style={styles.shrink}>
+            {t('trip.progress')}
           </Text>
-          <Pill label={`Stop ${Math.max(1, nextIdx === -1 ? q.journey.length : nextIdx)} of ${q.journey.length}`} />
+          <Pill label={t('trip.stopOf', { n: Math.max(1, nextIdx === -1 ? q.journey.length : nextIdx), total: q.journey.length })} />
         </View>
         <StopTimeline
           stops={q.journey.map((s, i) => ({
             id: s.id,
             name: s.name,
             time: s.time,
-            subtitle: s.passed ? 'Passed' : i === nextIdx ? 'Next stop' : 'Approaching',
+            subtitle: s.passed ? t('trip.passed') : i === nextIdx ? t('trip.nextStop') : t('trip.approaching'),
             state: s.passed ? 'done' : i === nextIdx ? 'current' : 'upcoming',
           }))}
           timeFormatter={formatTime}
@@ -346,6 +356,7 @@ function BusIllustration() {
 
 const styles = StyleSheet.create({
   flex: { flex: 1 },
+  shrink: { flexShrink: 1 },
   row: { flexDirection: 'row', alignItems: 'center', gap: 6 },
   rowBetween: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 8 },
   liveDot: { width: 8, height: 8, borderRadius: 4, backgroundColor: colors.emerald },

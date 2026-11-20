@@ -4,6 +4,7 @@ import { Pressable, StyleSheet, TextInput, View, type TextInputProps } from 'rea
 import { Icon, type IconName } from '@/components/ui/icon';
 import { Text } from '@/components/ui/text';
 import { colors, fonts, radius } from '@/constants/theme';
+import { useT } from '@/i18n';
 
 type TextFieldProps = TextInputProps & {
   label?: string;
@@ -29,6 +30,7 @@ export function TextField({
   onBlur,
   ...inputProps
 }: TextFieldProps) {
+  const t = useT();
   const [focused, setFocused] = useState(false);
   const [hidden, setHidden] = useState(password);
 
@@ -67,7 +69,7 @@ export function TextField({
         {password && (
           <Pressable
             accessibilityRole="button"
-            accessibilityLabel={hidden ? 'Show password' : 'Hide password'}
+            accessibilityLabel={hidden ? t('auth.showPassword') : t('auth.hidePassword')}
             onPress={() => setHidden((h) => !h)}
             hitSlop={10}
           >

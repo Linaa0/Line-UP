@@ -12,6 +12,7 @@ import { useEffect, useState } from 'react';
 
 import { colors } from '@/constants/theme';
 import { AnimatedSplash } from '@/features/onboarding/components/animated-splash';
+import { I18nProvider } from '@/i18n';
 import { AuthProvider, useAuth } from '@/lib/auth';
 
 void SplashScreen.preventAutoHideAsync();
@@ -27,9 +28,11 @@ export default function RootLayout() {
   });
 
   return (
-    <AuthProvider>
-      <RootNavigator ready={fontsLoaded || !!fontError} />
-    </AuthProvider>
+    <I18nProvider>
+      <AuthProvider>
+        <RootNavigator ready={fontsLoaded || !!fontError} />
+      </AuthProvider>
+    </I18nProvider>
   );
 }
 

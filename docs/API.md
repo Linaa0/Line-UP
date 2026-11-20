@@ -5,6 +5,7 @@ REST/JSON API served by the NestJS backend.
 - **Base URL (local):** `http://localhost:4000/api/v1`
 - **Auth:** `Authorization: Bearer <token>` (from `/auth/verify`, `/auth/login` or `/auth/reset-password`). 🔒 = requires it.
 - **Validation:** zod schemas; invalid input returns `400` with `message: ["field: reason", …]`.
+- **Language:** send `Accept-Language: en | rw | fr | sw`. Error messages and notifications are returned in that language (default English). See `docs/TRANSLATIONS.md`.
 - **Times** are ISO-8601 UTC; the app shows them in Kigali time (UTC+2). **Money** is integer RWF.
 
 ## What is real and what is demo

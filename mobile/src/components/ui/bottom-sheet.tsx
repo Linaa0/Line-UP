@@ -3,6 +3,7 @@ import { KeyboardAvoidingView, Modal, Platform, Pressable, StyleSheet, View } fr
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { colors } from '@/constants/theme';
+import { useT } from '@/i18n';
 
 type BottomSheetProps = {
   visible: boolean;
@@ -12,11 +13,12 @@ type BottomSheetProps = {
 
 /** Slide-up panel over a dimmed screen (payment confirmation, pickers). */
 export function BottomSheet({ visible, onClose, children }: BottomSheetProps) {
+  const t = useT();
   const insets = useSafeAreaInsets();
   return (
     <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose} statusBarTranslucent>
       <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={styles.root}>
-        <Pressable style={styles.scrim} onPress={onClose} accessibilityLabel="Close" />
+        <Pressable style={styles.scrim} onPress={onClose} accessibilityLabel={t('common.close')} />
         <View style={[styles.sheet, { paddingBottom: Math.max(insets.bottom, 16) + 8 }]}>
           <View style={styles.handle} />
           {children}

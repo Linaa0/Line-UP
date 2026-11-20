@@ -27,7 +27,7 @@ export function OtpBoxes({ value, length = 6, error }: { value: string; length?:
 }
 
 /** On-screen number pad, as in the design, so the code can be typed without the system keyboard. */
-export function NumberPad({ onKey, onDelete }: { onKey: (digit: string) => void; onDelete: () => void }) {
+export function NumberPad({ onKey, onDelete, deleteLabel }: { onKey: (digit: string) => void; onDelete: () => void; deleteLabel: string }) {
   return (
     <View style={styles.pad}>
       {KEYS.map(([digit, letters]) => (
@@ -40,7 +40,7 @@ export function NumberPad({ onKey, onDelete }: { onKey: (digit: string) => void;
       <Pressable onPress={() => onKey('0')} style={({ pressed }) => [styles.key, pressed && styles.keyPressed]} accessibilityLabel="0">
         <Text style={styles.keyDigit}>0</Text>
       </Pressable>
-      <Pressable onPress={onDelete} style={[styles.keyBlank, styles.del]} accessibilityLabel="Delete">
+      <Pressable onPress={onDelete} style={[styles.keyBlank, styles.del]} accessibilityLabel={deleteLabel}>
         <Icon name="delete" size={22} color={colors.text} />
       </Pressable>
     </View>

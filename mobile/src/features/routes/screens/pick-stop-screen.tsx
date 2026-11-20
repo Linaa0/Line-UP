@@ -11,12 +11,14 @@ import { Text } from '@/components/ui/text';
 import { TextField } from '@/components/ui/text-field';
 import { colors } from '@/constants/theme';
 import { useApi } from '@/hooks/use-api';
+import { useT } from '@/i18n';
 import type { Stop } from '@/lib/types';
 
 import { choosePickedStop } from '../search-store';
 
 /** Stop search, opened from Find a Route and Edit Profile. */
 export default function PickStopScreen() {
+  const t = useT();
   const { title } = useLocalSearchParams<{ title?: string }>();
   const { data, error, loading, refresh } = useApi<Stop[]>('/stops');
   const [query, setQuery] = useState('');
@@ -27,8 +29,8 @@ export default function PickStopScreen() {
   }, [data, query]);
 
   return (
-    <Screen header={<ScreenHeader title={title ?? 'Choose a stop'} back />}>
-      <TextField iconLeft="search" placeholder="Search stops or areas" value={query} onChangeText={setQuery} autoFocus autoCorrect={false} />
+    <Screen header={<ScreenHeader title={title ?? t('find.chooseStop')} back />}>
+      <TextField iconLeft="search" placeholder={t('find.searchStops')} value={query} onChangeText={setQuery} autoFocus autoCorrect={false} />
       {loading ? (
         <LoadingState />
       ) : error ? (
@@ -41,7 +43,7 @@ export default function PickStopScreen() {
           keyboardShouldPersistTaps="handled"
           ListEmptyComponent={
             <Text variant="body" color={colors.textSecondary} align="center" style={styles.empty}>
-              No stops match “{query}”.
+              {t('find.noStops', { q: query })}
             </Text>
           }
           renderItem={({ item }) => (
@@ -56,7 +58,7 @@ export default function PickStopScreen() {
               <View style={styles.flex}>
                 <Text variant="bodyStrong">{item.name}</Text>
                 <Text variant="caption" color={colors.textSecondary}>
-                  {item.area} · {item.routeCount} route{item.routeCount === 1 ? '' : 's'}
+                  {item.area} · {t('transit.routes', { count: item.routeCount })}
                 </Text>
               </View>
               <Icon name="chevron-right" size={18} color="#B6C2BC" />

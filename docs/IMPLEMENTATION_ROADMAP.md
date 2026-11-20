@@ -51,7 +51,8 @@ bus positions.
 ## Phase 4 — Hardening & release
 
 - [ ] Real integrations: SMS provider, MTN MoMo Collections / Airtel Money, operator GPS feed
-- [ ] Kinyarwanda and French translations (the language preference is already saved)
+- [x] App and API in English, Kinyarwanda, French and Kiswahili (docs/TRANSLATIONS.md)
+- [ ] Native-speaker review of the Kinyarwanda texts
 - [ ] More automated tests (mobile component tests, more API e2e flows)
 - [ ] CI (lint, type-check, test, build) on GitHub Actions
 - [ ] App builds with EAS (Android APK/AAB, iOS) and store submission

@@ -14,6 +14,7 @@ import { IconTile } from '@/components/ui/icon-tile';
 import { Text } from '@/components/ui/text';
 import { colors, fonts, radius, shadow } from '@/constants/theme';
 import { useApi } from '@/hooks/use-api';
+import { useFormat, useT } from '@/i18n';
 import type { LiveBus, LiveData } from '@/lib/types';
 
 const PAD = 26;
@@ -23,6 +24,8 @@ const BOTTOM = 290;
 
 /** Design 09-01. A schematic city map; buses are placed from the timetable. */
 export default function LiveMapScreen() {
+  const t = useT();
+  const f = useFormat();
   const { data, error, loading, refresh } = useApi<LiveData>('/live/buses', { pollMs: 20_000, refreshOnFocus: true });
   const [size, setSize] = useState({ w: 0, h: 0 });
   const [line, setLine] = useState<string | null>(null);
@@ -66,7 +69,7 @@ export default function LiveMapScreen() {
   return (
     <View style={styles.root} onLayout={onLayout}>
       {loading ? (
-        <LoadingState label="Loading the map…" />
+        <LoadingState label={t('map.loading')} />
       ) : error || !data ? (
         <ErrorState message={error ?? ''} onRetry={refresh} />
       ) : (
@@ -119,7 +122,7 @@ export default function LiveMapScreen() {
                     <G>
                       <Rect x={p.x - 42} y={p.y - 44} width={84} height={22} rx={11} fill={colors.text} />
                       <SvgText x={p.x} y={p.y - 29} fontSize={11} fontFamily={fonts.semibold} fill="#FFFFFF" textAnchor="middle">
-                        {`${b.code} (${b.minutesToNextStop} min)`}
+                        {`${b.code} (${f.formatMinutes(b.minutesToNextStop)})`}
                       </SvgText>
                     </G>
                   )}
@@ -139,7 +142,7 @@ export default function LiveMapScreen() {
             <Pressable
               key={key}
               onPress={() => setSelected(key)}
-              accessibilityLabel={`Bus ${b.code} to ${b.terminus}`}
+              accessibilityLabel={t('map.busTo', { code: b.code, to: b.terminus })}
               style={[styles.hit, { left: p.x - 18, top: p.y - 18 }]}
             />
           );
@@ -149,22 +152,24 @@ export default function LiveMapScreen() {
         <View style={styles.titleRow} pointerEvents="box-none">
           <View style={styles.titlePill}>
             <Text variant="label" color={colors.muted}>
-              LINE-UP Transit
+              {t('map.transit')}
             </Text>
             <View style={styles.row}>
-              <Text variant="title">Live Kigali Map</Text>
+              <Text variant="title" numberOfLines={1} style={styles.shrink}>
+                {t('map.title')}
+              </Text>
               <View style={styles.estimated}>
                 <View style={styles.dot} />
                 <Text variant="captionStrong" color={colors.forest700}>
-                  Estimated
+                  {t('map.estimated')}
                 </Text>
               </View>
             </View>
           </View>
-          <HeaderIconButton icon="bell" label="Notifications" onPress={() => router.push('/notifications')} />
+          <HeaderIconButton icon="bell" label={t('common.notifications')} onPress={() => router.push('/notifications')} />
         </View>
         <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.chips}>
-          <Chip label="All lines" selected={!line} onPress={() => setLine(null)} />
+          <Chip label={t('map.allLines')} selected={!line} onPress={() => setLine(null)} />
           {codes.map((c) => (
             <Chip key={c} label={c} selected={line === c} onPress={() => { setLine(c); setSelected(null); }} />
           ))}
@@ -181,14 +186,14 @@ export default function LiveMapScreen() {
                 </View>
                 <View style={styles.flex}>
                   <Text variant="label" color={colors.muted}>
-                    Next stop · <Text variant="label" color={colors.emerald}>On schedule</Text>
+                    {t('map.nextStop')} · <Text variant="label" color={colors.emerald}>{t('map.onSchedule')}</Text>
                   </Text>
                   <Text variant="title" numberOfLines={1}>
                     {focus.nextStop.name}
                   </Text>
                 </View>
                 <View style={styles.eta}>
-                  <Text style={styles.etaText}>{focus.minutesToNextStop} min</Text>
+                  <Text style={styles.etaText}>{f.formatMinutes(focus.minutesToNextStop)}</Text>
                   <Text variant="caption" color={colors.muted}>
                     {focus.plate ?? ''}
                   </Text>
@@ -199,9 +204,9 @@ export default function LiveMapScreen() {
                   <IconTile name="users" size={32} tone="warning" />
                   <View style={styles.flex}>
                     <Text variant="caption" color={colors.muted}>
-                      Occupancy
+                      {t('map.occupancy')}
                     </Text>
-                    <Text variant="captionStrong">{focus.loadPercent}% booked</Text>
+                    <Text variant="captionStrong">{t('map.booked', { count: focus.loadPercent })}</Text>
                     <LoadBar percent={focus.loadPercent} />
                   </View>
                 </View>
@@ -209,7 +214,7 @@ export default function LiveMapScreen() {
                   <IconTile name="navigation" size={32} />
                   <View style={styles.flex}>
                     <Text variant="caption" color={colors.muted}>
-                      Towards
+                      {t('map.towards')}
                     </Text>
                     <Text variant="captionStrong" numberOfLines={1}>
                       {shortName(focus.terminus)}
@@ -219,7 +224,7 @@ export default function LiveMapScreen() {
               </View>
               <View style={styles.row}>
                 <Button
-                  label="View Route"
+                  label={t('map.viewRoute')}
                   iconRight="chevron-right"
                   style={styles.flex}
                   onPress={() => router.push({ pathname: '/routes/[id]', params: { id: focus.routeId, from: focus.nextStop.id } })}
@@ -229,7 +234,7 @@ export default function LiveMapScreen() {
                     {buses.length}
                   </Text>
                   <Text variant="caption" color={colors.muted}>
-                    buses
+                    {t('map.buses')}
                   </Text>
                 </View>
               </View>
@@ -238,7 +243,7 @@ export default function LiveMapScreen() {
             <View style={styles.row}>
               <Icon name="moon" size={20} color={colors.forest700} />
               <Text variant="body" color={colors.textSecondary} style={styles.flex}>
-                No buses on the road right now. Service runs from about 05:00 to 22:30.
+                {t('map.noBuses')}
               </Text>
             </View>
           )}
@@ -252,10 +257,11 @@ const styles = StyleSheet.create({
   root: { flex: 1, backgroundColor: '#E9F2EC' },
   hit: { position: 'absolute', width: 36, height: 36, borderRadius: 18 },
   flex: { flex: 1 },
+  shrink: { flexShrink: 1 },
   row: { flexDirection: 'row', alignItems: 'center', gap: 10 },
   overlayTop: { position: 'absolute', top: 0, left: 0, right: 0 },
   titleRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 16, paddingTop: 8 },
-  titlePill: { backgroundColor: 'rgba(255,255,255,0.96)', borderRadius: radius.xl, paddingHorizontal: 16, paddingVertical: 8, ...shadow.card },
+  titlePill: { flexShrink: 1, marginRight: 10, backgroundColor: 'rgba(255,255,255,0.96)', borderRadius: radius.xl, paddingHorizontal: 16, paddingVertical: 8, ...shadow.card },
   estimated: { flexDirection: 'row', alignItems: 'center', gap: 5, backgroundColor: colors.emerald50, borderRadius: radius.full, paddingHorizontal: 8, paddingVertical: 3 },
   dot: { width: 6, height: 6, borderRadius: 3, backgroundColor: colors.emerald },
   chips: { gap: 8, paddingHorizontal: 16, paddingVertical: 10 },

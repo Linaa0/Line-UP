@@ -12,16 +12,16 @@ import { SectionLabel } from '@/components/ui/section-label';
 import { Text } from '@/components/ui/text';
 import { colors } from '@/constants/theme';
 import { useApi } from '@/hooks/use-api';
+import { type MessageKey, useFormat, useI18n } from '@/i18n';
 import { api } from '@/lib/api';
 import type { AppNotification } from '@/lib/types';
-import { formatDay, relativeTime } from '@/utils/format';
 
-const FILTERS = [
-  { label: 'All', types: null },
-  { label: 'Trips', types: ['TRIP', 'QUEUE'] },
-  { label: 'Payments', types: ['PAYMENT'] },
-  { label: 'Alerts', types: ['ALERT', 'ACCOUNT'] },
-] as const;
+const FILTERS: { label: MessageKey; types: AppNotification['type'][] | null }[] = [
+  { label: 'notifications.all', types: null },
+  { label: 'notifications.trips', types: ['TRIP', 'QUEUE'] },
+  { label: 'notifications.payments', types: ['PAYMENT'] },
+  { label: 'notifications.alerts', types: ['ALERT', 'ACCOUNT'] },
+];
 
 const ICON: Record<AppNotification['type'], { icon: IconName; tone: 'mint' | 'dark' | 'warning' }> = {
   TRIP: { icon: 'truck', tone: 'dark' },
@@ -31,21 +31,24 @@ const ICON: Record<AppNotification['type'], { icon: IconName; tone: 'mint' | 'da
   ACCOUNT: { icon: 'gift', tone: 'mint' },
 };
 
-/** Designs 11-01 and 11-02. */
+/** Designs 11-01 and 11-02. Notification texts come from the API in the current language. */
 export default function NotificationsScreen() {
-  const { data, error, loading, refresh, refreshing, setData } = useApi<{ unread: number; items: AppNotification[] }>('/notifications');
+  const { t, lang } = useI18n();
+  const f = useFormat();
+  // The language is part of the address so the list reloads when it changes.
+  const { data, error, loading, refresh, refreshing, setData } = useApi<{ unread: number; items: AppNotification[] }>(`/notifications?lang=${lang}`);
   const [filter, setFilter] = useState(0);
 
   const groups = useMemo(() => {
-    const types = FILTERS[filter].types as readonly string[] | null;
+    const types = FILTERS[filter].types;
     const items = (data?.items ?? []).filter((n) => !types || types.includes(n.type));
     const map = new Map<string, AppNotification[]>();
     items.forEach((n) => {
-      const day = formatDay(n.createdAt);
+      const day = f.formatDay(n.createdAt);
       map.set(day, [...(map.get(day) ?? []), n]);
     });
     return [...map.entries()];
-  }, [data, filter]);
+  }, [data, filter, f]);
 
   const markAll = async () => {
     if (!data) return;
@@ -53,19 +56,19 @@ export default function NotificationsScreen() {
     await api('/notifications/read-all', { method: 'POST' }).catch(() => undefined);
   };
 
-  const header = <ScreenHeader title="Notifications" back />;
+  const header = <ScreenHeader title={t('notifications.title')} back />;
   if (loading) return <Screen header={header}><LoadingState /></Screen>;
   if (error || !data) return <Screen header={header}><ErrorState message={error ?? ''} onRetry={refresh} /></Screen>;
 
   return (
     <Screen header={header} padded={false}>
       <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.chips} style={styles.chipBar}>
-        {FILTERS.map((f, i) => (
-          <Chip key={f.label} label={f.label} selected={i === filter} onPress={() => setFilter(i)} />
+        {FILTERS.map((item, i) => (
+          <Chip key={item.label} label={t(item.label)} selected={i === filter} onPress={() => setFilter(i)} />
         ))}
       </ScrollView>
       {!groups.length ? (
-        <EmptyState icon="bell" title="You're all caught up" message="Bus arrivals, queue updates and payment receipts will show up here as they happen." />
+        <EmptyState icon="bell" title={t('notifications.emptyTitle')} message={t('notifications.emptyBody')} />
       ) : (
         <ScrollView contentContainerStyle={styles.scroll} refreshControl={<RefreshControl refreshing={refreshing} onRefresh={refresh} tintColor={colors.emerald} />}>
           {groups.map(([day, items], gi) => (
@@ -76,7 +79,7 @@ export default function NotificationsScreen() {
                   gi === 0 && data.unread > 0 ? (
                     <Pressable onPress={markAll} hitSlop={8}>
                       <Text variant="captionStrong" color={colors.emerald}>
-                        Mark all as read
+                        {t('notifications.markAll')}
                       </Text>
                     </Pressable>
                   ) : undefined
@@ -95,7 +98,7 @@ export default function NotificationsScreen() {
                             {n.title}
                           </Text>
                           <Text variant="caption" color={colors.muted}>
-                            {relativeTime(n.createdAt)}
+                            {f.relativeTime(n.createdAt)}
                           </Text>
                         </View>
                         <Text variant="caption" color={colors.textSecondary}>

@@ -15,6 +15,7 @@ import { Text } from '@/components/ui/text';
 import { colors, fonts, radius, shadow } from '@/constants/theme';
 import { PhoneField, toE164 } from '@/features/authentication/components/auth-parts';
 import { useApi } from '@/hooks/use-api';
+import { useT } from '@/i18n';
 import { api, ApiError } from '@/lib/api';
 import { useAuth } from '@/lib/auth';
 import type { Ticket } from '@/lib/types';
@@ -22,6 +23,7 @@ import { formatPhone, formatRwf } from '@/utils/format';
 
 type Method = 'MTN_MOMO' | 'AIRTEL_MONEY';
 
+/** Brand names stay the same in every language. */
 const METHODS: { id: Method; name: string; tag: string; color: string; fg: string }[] = [
   { id: 'MTN_MOMO', name: 'MTN Mobile Money', tag: 'MoMo', color: colors.momo, fg: '#1F2937' },
   { id: 'AIRTEL_MONEY', name: 'Airtel Money', tag: 'airtel', color: colors.airtel, fg: '#FFFFFF' },
@@ -33,6 +35,7 @@ const METHODS: { id: Method; name: string; tag: string; color: string; fg: strin
  * (real MoMo payments are approved on the payer's phone, not in this app).
  */
 export default function PaymentScreen() {
+  const t = useT();
   const { ticketId } = useLocalSearchParams<{ ticketId: string }>();
   const { user } = useAuth();
   const { data: ticket, error, loading, refresh } = useApi<Ticket>(`/tickets/${ticketId}`);
@@ -42,9 +45,9 @@ export default function PaymentScreen() {
   const [busy, setBusy] = useState(false);
   const [payError, setPayError] = useState<string | null>(null);
 
-  const header = <ScreenHeader title="Payment" back />;
+  const header = <ScreenHeader title={t('pay.title')} back />;
   if (loading) return <Screen header={header}><LoadingState /></Screen>;
-  if (error || !ticket) return <Screen header={header}><ErrorState message={error ?? 'Ticket not found.'} onRetry={refresh} /></Screen>;
+  if (error || !ticket) return <Screen header={header}><ErrorState message={error ?? ''} onRetry={refresh} /></Screen>;
 
   const pay = async () => {
     setBusy(true);
@@ -55,19 +58,20 @@ export default function PaymentScreen() {
       router.dismissTo('/home');
       router.push({ pathname: '/checkout/success', params: { ticketId } });
     } catch (e) {
-      setPayError(e instanceof ApiError ? e.message : 'Payment failed.');
+      setPayError(e instanceof ApiError ? e.message : t('pay.failed'));
     } finally {
       setBusy(false);
     }
   };
 
   const chosen = METHODS.find((m) => m.id === method)!;
+  const amount = formatRwf(ticket.fare);
 
   return (
     <Screen
       scroll
       header={header}
-      footer={<Button label={`Pay ${formatRwf(ticket.fare)}`} iconRight="lock" onPress={() => setSheet(true)} disabled={phone.replace(/\D/g, '').length < 9} />}
+      footer={<Button label={t('pay.pay', { amount })} iconRight="lock" onPress={() => setSheet(true)} disabled={phone.replace(/\D/g, '').length < 9} />}
     >
       <Card style={styles.summary}>
         <View style={styles.rowBetween}>
@@ -77,12 +81,12 @@ export default function PaymentScreen() {
               {shortName(ticket.from.name)} → {shortName(ticket.to.name)}
             </Text>
           </View>
-          <Pill label="Standard" tone="outline" />
+          <Pill label={t('pay.standard')} tone="outline" />
         </View>
         <View style={styles.divider} />
         <View style={styles.rowBetween}>
           <Text variant="caption" color={colors.textSecondary}>
-            Total transit fare
+            {t('pay.totalFare')}
           </Text>
           <Text style={styles.amount}>
             <Text variant="captionStrong" color={colors.forest900}>
@@ -93,7 +97,7 @@ export default function PaymentScreen() {
         </View>
       </Card>
 
-      <SectionLabel label="Select payment method" />
+      <SectionLabel label={t('pay.selectMethod')} />
       <View style={styles.methods}>
         {METHODS.map((m) => {
           const on = m.id === method;
@@ -105,7 +109,7 @@ export default function PaymentScreen() {
               <View style={styles.flex}>
                 <Text variant="bodyStrong">{m.name}</Text>
                 <Text variant="caption" color={colors.textSecondary}>
-                  {on ? formatPhone(toE164(phone)) : 'Rwanda account'}
+                  {on ? formatPhone(toE164(phone)) : t('pay.rwandaAccount')}
                 </Text>
               </View>
               <View style={[styles.radio, on && styles.radioOn]}>{on && <View style={styles.radioDot} />}</View>
@@ -115,29 +119,26 @@ export default function PaymentScreen() {
       </View>
 
       <View style={styles.phone}>
-        <PhoneField label={`${chosen.name} number`} value={phone} onChangeText={setPhone} />
+        <PhoneField label={t('pay.numberLabel', { method: chosen.name })} value={phone} onChangeText={setPhone} />
       </View>
 
       <BottomSheet visible={sheet} onClose={() => !busy && setSheet(false)}>
         <Text variant="title" align="center">
-          Confirm payment
+          {t('pay.confirmTitle')}
         </Text>
         <Text variant="body" color={colors.textSecondary} align="center">
-          {formatRwf(ticket.fare)} to LINE-UP Transit from {formatPhone(toE164(phone))} ({chosen.name})
+          {t('pay.confirmBody', { amount, phone: formatPhone(toE164(phone)), method: chosen.name })}
         </Text>
-        <DemoNotice
-          title="Demo payment, no money is charged"
-          message="Mobile Money isn't connected yet. With a real provider you would approve this on your phone with your MoMo PIN. Never type your PIN into an app."
-        />
+        <DemoNotice title={t('demo.paymentTitle')} message={t('demo.paymentBody')} />
         {payError && (
           <Text variant="caption" color={colors.danger} align="center">
             {payError}
           </Text>
         )}
-        <Button label="Confirm Payment" iconRight="check" onPress={pay} loading={busy} />
+        <Button label={t('pay.confirm')} iconRight="check" onPress={pay} loading={busy} />
         <Pressable onPress={() => setSheet(false)} disabled={busy} style={styles.cancel}>
           <Text variant="captionStrong" color={colors.muted}>
-            Cancel
+            {t('common.cancel')}
           </Text>
         </Pressable>
       </BottomSheet>

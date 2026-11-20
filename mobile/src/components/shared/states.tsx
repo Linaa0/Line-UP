@@ -5,31 +5,34 @@ import type { IconName } from '@/components/ui/icon';
 import { Icon } from '@/components/ui/icon';
 import { Text } from '@/components/ui/text';
 import { colors, radius } from '@/constants/theme';
+import { useT } from '@/i18n';
 
-export function LoadingState({ label = 'Loading…', style }: { label?: string; style?: ViewStyle }) {
+export function LoadingState({ label, style }: { label?: string; style?: ViewStyle }) {
+  const t = useT();
   return (
     <View style={[styles.center, style]}>
       <ActivityIndicator color={colors.emerald} size="large" />
       <Text variant="caption" color={colors.textSecondary}>
-        {label}
+        {label ?? t('common.loading')}
       </Text>
     </View>
   );
 }
 
 export function ErrorState({ message, onRetry, style }: { message: string; onRetry?: () => void; style?: ViewStyle }) {
+  const t = useT();
   return (
     <View style={[styles.center, style]}>
       <View style={[styles.halo, { backgroundColor: colors.danger50 }]}>
         <Icon name="wifi-off" size={26} color={colors.danger} />
       </View>
       <Text variant="title" align="center">
-        Couldn&apos;t load this
+        {t('common.couldNotLoad')}
       </Text>
       <Text variant="body" color={colors.textSecondary} align="center">
         {message}
       </Text>
-      {onRetry && <Button label="Try again" variant="secondary" iconLeft="refresh-cw" onPress={onRetry} style={styles.retry} />}
+      {onRetry && <Button label={t('common.tryAgain')} variant="secondary" iconLeft="refresh-cw" onPress={onRetry} style={styles.retry} />}
     </View>
   );
 }

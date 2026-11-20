@@ -13,42 +13,44 @@ import { Text } from '@/components/ui/text';
 import { TextField } from '@/components/ui/text-field';
 import { colors, radius, shadow } from '@/constants/theme';
 import { useApi } from '@/hooks/use-api';
+import { type MessageKey, useT } from '@/i18n';
 
 type Topic = 'tickets' | 'payments' | 'queues' | 'account';
 
-const TOPICS: { id: Topic; label: string; icon: IconName }[] = [
-  { id: 'tickets', label: 'Tickets & QR', icon: 'grid' },
-  { id: 'payments', label: 'Payments', icon: 'credit-card' },
-  { id: 'queues', label: 'Queues', icon: 'users' },
-  { id: 'account', label: 'My account', icon: 'user' },
+const TOPICS: { id: Topic; label: MessageKey; icon: IconName }[] = [
+  { id: 'tickets', label: 'help.topicTickets', icon: 'grid' },
+  { id: 'payments', label: 'help.topicPayments', icon: 'credit-card' },
+  { id: 'queues', label: 'help.topicQueues', icon: 'users' },
+  { id: 'account', label: 'help.topicAccount', icon: 'user' },
 ];
 
-const FAQ: { topic: Topic; q: string; a: string }[] = [
-  { topic: 'tickets', q: 'How do I use my ticket?', a: 'Open My Tickets, tap your ticket and show the QR code to the conductor or at the turnstile. Turn up your screen brightness for faster scanning.' },
-  { topic: 'tickets', q: 'How long is my ticket valid?', a: 'A single-journey ticket is valid for the bus you chose, until 30 minutes after its scheduled arrival.' },
-  { topic: 'payments', q: 'Which payment methods can I use?', a: 'MTN Mobile Money and Airtel Money. Many buses also accept Tap&Go cards at the door.' },
-  { topic: 'payments', q: 'My payment went through but I see no ticket', a: 'Pull down on My Tickets to refresh. If it still is missing, report a payment issue with the time you paid and we will check it.' },
-  { topic: 'queues', q: 'How does the virtual queue work?', a: 'After buying a ticket, join the queue for your bus. Your number is your place in line at the boarding bay; boarding opens about 3 minutes before departure.' },
-  { topic: 'queues', q: 'Where are bus times from?', a: 'Times and bus positions are estimated from each route’s timetable. Live GPS tracking will be added when operators connect their buses.' },
-  { topic: 'account', q: 'How do I change my home stop?', a: 'Go to Profile → Personal information and choose your usual stop. Home then shows the next buses from there.' },
-  { topic: 'account', q: 'I forgot my password', a: 'On the Log In screen tap “Forgot password?”, enter your phone number and the code we send you, then choose a new password.' },
+const FAQ: { topic: Topic; q: MessageKey; a: MessageKey }[] = [
+  { topic: 'tickets', q: 'help.q1', a: 'help.a1' },
+  { topic: 'tickets', q: 'help.q2', a: 'help.a2' },
+  { topic: 'payments', q: 'help.q3', a: 'help.a3' },
+  { topic: 'payments', q: 'help.q4', a: 'help.a4' },
+  { topic: 'queues', q: 'help.q5', a: 'help.a5' },
+  { topic: 'queues', q: 'help.q6', a: 'help.a6' },
+  { topic: 'account', q: 'help.q7', a: 'help.a7' },
+  { topic: 'account', q: 'help.q8', a: 'help.a8' },
 ];
 
 /** Design 13-01. */
 export default function HelpCenterScreen() {
+  const t = useT();
   const reports = useApi<unknown[]>('/support/reports', { refreshOnFocus: true });
   const [query, setQuery] = useState('');
   const [topic, setTopic] = useState<Topic | null>(null);
-  const [open, setOpen] = useState<string | null>(FAQ[0].q);
+  const [open, setOpen] = useState<MessageKey | null>(FAQ[0].q);
 
   const faqs = useMemo(() => {
     const q = query.trim().toLowerCase();
-    return FAQ.filter((f) => (!topic || f.topic === topic) && (!q || f.q.toLowerCase().includes(q) || f.a.toLowerCase().includes(q)));
-  }, [query, topic]);
+    return FAQ.filter((f) => (!topic || f.topic === topic) && (!q || t(f.q).toLowerCase().includes(q) || t(f.a).toLowerCase().includes(q)));
+  }, [query, topic, t]);
 
   return (
-    <Screen scroll header={<ScreenHeader title="Help Center" back />}>
-      <TextField iconLeft="search" placeholder="Search tickets, payments, queues…" value={query} onChangeText={setQuery} />
+    <Screen scroll header={<ScreenHeader title={t('help.title')} back />}>
+      <TextField iconLeft="search" placeholder={t('help.search')} value={query} onChangeText={setQuery} />
 
       <View style={styles.contact}>
         <Pressable onPress={() => router.push('/support/report')} style={[styles.contactCard, styles.primary]} accessibilityRole="button">
@@ -56,35 +58,37 @@ export default function HelpCenterScreen() {
             <Icon name="message-square" size={20} color={colors.mint} />
           </View>
           <Text variant="bodyStrong" color="#FFFFFF">
-            Report an issue
+            {t('help.report')}
           </Text>
           <Text variant="caption" color="rgba(255,255,255,0.75)">
-            Payments, delays, lost items
+            {t('help.reportSub')}
           </Text>
         </Pressable>
         <View style={styles.contactCard}>
           <IconTile name="inbox" />
-          <Text variant="bodyStrong">My reports</Text>
+          <Text variant="bodyStrong">{t('help.myReports')}</Text>
           <Text variant="caption" color={colors.textSecondary}>
-            {reports.data ? `${reports.data.length} sent · replies by SMS` : 'Replies by SMS'}
+            {reports.data ? t('help.reportsSent', { count: reports.data.length }) : t('help.repliesSms')}
           </Text>
         </View>
       </View>
 
-      <SectionLabel label="Browse topics" />
+      <SectionLabel label={t('help.browse')} />
       <View style={styles.topics}>
-        {TOPICS.map((t) => {
-          const on = topic === t.id;
+        {TOPICS.map((item) => {
+          const on = topic === item.id;
           return (
-            <Pressable key={t.id} onPress={() => setTopic(on ? null : t.id)} style={[styles.topic, on && styles.topicOn]} accessibilityRole="button" accessibilityState={{ selected: on }}>
-              <IconTile name={t.icon} size={34} tone={on ? 'dark' : 'mint'} />
-              <Text variant="bodyStrong">{t.label}</Text>
+            <Pressable key={item.id} onPress={() => setTopic(on ? null : item.id)} style={[styles.topic, on && styles.topicOn]} accessibilityRole="button" accessibilityState={{ selected: on }}>
+              <IconTile name={item.icon} size={34} tone={on ? 'dark' : 'mint'} />
+              <Text variant="bodyStrong" style={styles.flex} numberOfLines={2}>
+                {t(item.label)}
+              </Text>
             </Pressable>
           );
         })}
       </View>
 
-      <SectionLabel label={topic ? TOPICS.find((t) => t.id === topic)!.label : 'Popular questions'} />
+      <SectionLabel label={topic ? t(TOPICS.find((x) => x.id === topic)!.label) : t('help.popular')} />
       <Card padding={0}>
         {faqs.length ? (
           faqs.map((f, i) => {
@@ -93,13 +97,13 @@ export default function HelpCenterScreen() {
               <Pressable key={f.q} onPress={() => setOpen(expanded ? null : f.q)} style={[styles.faq, i > 0 && styles.divider]} accessibilityRole="button" accessibilityState={{ expanded }}>
                 <View style={styles.faqRow}>
                   <Text variant="bodyStrong" style={styles.flex}>
-                    {f.q}
+                    {t(f.q)}
                   </Text>
                   <Icon name={expanded ? 'chevron-up' : 'chevron-down'} size={18} color={colors.muted} />
                 </View>
                 {expanded && (
                   <Text variant="caption" color={colors.textSecondary} style={styles.answer}>
-                    {f.a}
+                    {t(f.a)}
                   </Text>
                 )}
               </Pressable>
@@ -107,7 +111,7 @@ export default function HelpCenterScreen() {
           })
         ) : (
           <Text variant="body" color={colors.textSecondary} style={styles.faq}>
-            No answers match “{query}”. Report an issue and our team will help.
+            {t('help.noAnswers', { q: query })}
           </Text>
         )}
       </Card>
@@ -116,15 +120,15 @@ export default function HelpCenterScreen() {
         <IconTile name="alert-triangle" tone="danger" round />
         <View style={styles.flex}>
           <Text variant="bodyStrong" color="#991B1B">
-            Emergency on a bus?
+            {t('help.emergency')}
           </Text>
           <Text variant="caption" color="#B45353">
-            Contact Rwanda emergency services
+            {t('help.emergencySub')}
           </Text>
         </View>
         <Pressable onPress={() => void Linking.openURL('tel:112')} style={styles.call} accessibilityRole="button">
           <Text variant="captionStrong" color="#FFFFFF">
-            Call 112
+            {t('help.call')}
           </Text>
         </Pressable>
       </View>

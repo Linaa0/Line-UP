@@ -14,14 +14,17 @@ import { Pill } from '@/components/ui/pill';
 import { Text } from '@/components/ui/text';
 import { colors, fonts, radius, shadow, spacing } from '@/constants/theme';
 import { useApi } from '@/hooks/use-api';
+import { useFormat, useT } from '@/i18n';
 import { useAuth } from '@/lib/auth';
 import type { Departure, QueueEntry, Stop } from '@/lib/types';
-import { firstName, formatRwf, greeting, initials, KIND_LABEL, payLabel } from '@/utils/format';
+import { firstName, formatRwf, initials, payLabel } from '@/utils/format';
 
 const city = require('@/assets/images/photos/kigali-city.png');
 
 /** Design 03-01. */
 export default function HomeScreen() {
+  const t = useT();
+  const f = useFormat();
   const { user } = useAuth();
   const fallbackStop = useApi<Stop[]>(user?.homeStop ? null : '/stops?q=Nyabugogo');
   const stopId = user?.homeStop?.id ?? fallbackStop.data?.[0]?.id ?? null;
@@ -58,17 +61,17 @@ export default function HomeScreen() {
             </View>
             <View>
               <Text variant="label" color={colors.emerald}>
-                LINE-UP Kigali
+                {t('home.eyebrow')}
               </Text>
-              <Text variant="title">Home</Text>
+              <Text variant="title">{t('home.title')}</Text>
             </View>
           </View>
           <View style={styles.headerActions}>
-            <Pressable onPress={() => router.push('/notifications')} hitSlop={8} accessibilityLabel="Notifications">
+            <Pressable onPress={() => router.push('/notifications')} hitSlop={8} accessibilityLabel={t('common.notifications')}>
               <Icon name="bell" size={23} />
               {!!notes.data?.unread && <View style={styles.badgeDot} />}
             </Pressable>
-            <Pressable onPress={() => router.push('/profile')} style={styles.avatar} accessibilityLabel="Profile">
+            <Pressable onPress={() => router.push('/profile')} style={styles.avatar} accessibilityLabel={t('common.profile')}>
               <Text style={styles.avatarText}>{initials(user?.fullName ?? '')}</Text>
             </Pressable>
           </View>
@@ -77,24 +80,22 @@ export default function HomeScreen() {
         {/* Greeting */}
         <View style={styles.greet}>
           <View style={styles.greetTop}>
-            <Text variant="label" color={colors.emerald}>
-              Kigali smart transit
+            <Text variant="label" color={colors.emerald} style={styles.flex}>
+              {t('home.transit')}
             </Text>
-            <Pill label="Live system" dot />
+            <Pill label={t('home.liveSystem')} dot />
           </View>
-          <Text variant="h1">
-            {greeting()}, {firstName(user?.fullName ?? '')}
-          </Text>
+          <Text variant="h1">{t('home.greeting', { greeting: f.greeting(), name: firstName(user?.fullName ?? '') })}</Text>
           <Text variant="body" color={colors.textSecondary}>
-            Ready for your commute across the hills?
+            {t('home.sub')}
           </Text>
         </View>
 
         {/* Search */}
         <Pressable onPress={() => router.push('/routes')} style={styles.search} accessibilityRole="search">
           <Icon name="search" size={20} color={colors.emerald} />
-          <Text variant="body" color={colors.muted} style={styles.flex}>
-            Where are you going today?
+          <Text variant="body" color={colors.muted} style={styles.flex} numberOfLines={1}>
+            {t('home.search')}
           </Text>
           <View style={styles.searchTune}>
             <Icon name="sliders" size={16} color={colors.forest900} />
@@ -110,12 +111,12 @@ export default function HomeScreen() {
               </View>
               <View style={styles.flex}>
                 <Text variant="label" color={colors.mint}>
-                  {trip.status === 'ON_BUS' ? 'Trip in progress' : trip.status === 'BOARDING' ? 'Boarding now' : 'In the virtual queue'}
+                  {trip.status === 'ON_BUS' ? t('home.tripOnBus') : trip.status === 'BOARDING' ? t('home.tripBoarding') : t('home.tripWaiting')}
                 </Text>
                 <Text variant="bodyStrong" color="#FFFFFF">
                   {trip.status === 'ON_BUS'
-                    ? `${trip.route.code} to ${trip.to.name} · ${trip.remainingMin} min left`
-                    : `#${trip.position} for ${trip.route.code} · departs ${trip.departureLabel}`}
+                    ? t('home.tripOnBusText', { code: trip.route.code, to: trip.to.name, min: trip.remainingMin })
+                    : t('home.tripWaitingText', { position: trip.position, code: trip.route.code, time: trip.departureLabel })}
                 </Text>
               </View>
               <Icon name="chevron-right" size={20} color="#FFFFFF" />
@@ -125,9 +126,9 @@ export default function HomeScreen() {
 
         {/* Quick actions */}
         <View style={styles.quick}>
-          <QuickAction icon="credit-card" title="My Tickets" sub={`${summary.data?.activeTickets ?? 0} active`} onPress={() => router.push('/tickets')} />
-          <QuickAction icon="bookmark" title="Saved Routes" sub={`${summary.data?.savedRoutes ?? 0} pinned`} onPress={() => router.push('/routes')} />
-          <QuickAction icon="headphones" title="Help Desk" sub="Report & FAQ" onPress={() => router.push('/support')} />
+          <QuickAction icon="credit-card" title={t('home.myTickets')} sub={t('home.active', { count: summary.data?.activeTickets ?? 0 })} onPress={() => router.push('/tickets')} />
+          <QuickAction icon="bookmark" title={t('home.savedRoutes')} sub={t('home.pinned', { count: summary.data?.savedRoutes ?? 0 })} onPress={() => router.push('/routes')} />
+          <QuickAction icon="headphones" title={t('home.helpDesk')} sub={t('home.helpDeskSub')} onPress={() => router.push('/support')} />
         </View>
 
         {/* Banner */}
@@ -135,30 +136,30 @@ export default function HomeScreen() {
           <Image source={city} style={StyleSheet.absoluteFill} contentFit="cover" contentPosition="center" />
           <LinearGradient colors={['rgba(0,37,19,0.92)', 'rgba(0,37,19,0.35)']} start={{ x: 0, y: 0.5 }} end={{ x: 1, y: 0.5 }} style={StyleSheet.absoluteFill} />
           <Text variant="label" color={colors.mint}>
-            Kigali smart urban hub
+            {t('home.bannerEyebrow')}
           </Text>
-          <Text style={styles.bannerTitle}>Express Corridor</Text>
+          <Text style={styles.bannerTitle}>{t('home.bannerTitle')}</Text>
           <Text variant="caption" color="rgba(255,255,255,0.85)">
-            Nyabugogo • Downtown • Kicukiro · see buses on the map
+            {t('home.bannerBody')}
           </Text>
         </Pressable>
 
         {/* Nearby buses */}
         <View style={styles.sectionHead}>
           <View style={styles.sectionTitle}>
-            <Text variant="h2">Nearby Buses</Text>
-            {!!departures.data?.items.length && <Pill label={`${departures.data.items.length} soon`} />}
+            <Text variant="h2">{t('home.nearby')}</Text>
+            {!!departures.data?.items.length && <Pill label={t('home.soon', { count: departures.data.items.length })} />}
           </View>
           <Pressable onPress={() => router.push('/live-map')} style={styles.viewAll} accessibilityRole="link">
             <Text variant="captionStrong" color={colors.forest700}>
-              View all
+              {t('home.viewAll')}
             </Text>
             <Icon name="arrow-right" size={14} color={colors.forest700} />
           </Pressable>
         </View>
         {departures.data && (
           <Text variant="caption" color={colors.textSecondary} style={styles.atStop}>
-            Departing from {departures.data.stop.name} · times from the timetable
+            {t('home.departingFrom', { stop: departures.data.stop.name })}
           </Text>
         )}
 
@@ -188,10 +189,10 @@ function QuickAction({ icon, title, sub, onPress }: { icon: IconName; title: str
       <View style={styles.quickIcon}>
         <Icon name={icon} size={20} color={colors.forest900} />
       </View>
-      <Text variant="bodyStrong" align="center" numberOfLines={1}>
+      <Text variant="bodyStrong" align="center" numberOfLines={2} style={styles.quickTitle}>
         {title}
       </Text>
-      <Text variant="caption" color={colors.emerald} align="center">
+      <Text variant="caption" color={colors.emerald} align="center" numberOfLines={2}>
         {sub}
       </Text>
     </Pressable>
@@ -199,7 +200,10 @@ function QuickAction({ icon, title, sub, onPress }: { icon: IconName; title: str
 }
 
 function BusCard({ item }: { item: Departure }) {
+  const t = useT();
+  const f = useFormat();
   const soon = item.minutesAway <= 3;
+  const bay = f.bay(item.from.bay);
   return (
     <Pressable
       onPress={() => router.push({ pathname: '/routes/[id]', params: { id: item.route.id, from: item.from.id, to: item.to.id } })}
@@ -209,12 +213,12 @@ function BusCard({ item }: { item: Departure }) {
         <View style={styles.rowBetween}>
           <View style={styles.row}>
             <RouteBadge code={item.route.code} size="sm" />
-            <Pill label={KIND_LABEL[item.route.kind]} />
+            <Pill label={f.kind(item.route.kind)} />
           </View>
           <View style={styles.row}>
             <View style={[styles.statusDot, soon && { backgroundColor: colors.warning }]} />
             <Text variant="captionStrong" color={soon ? colors.warning : colors.forest700}>
-              {soon ? 'Arriving soon' : 'On schedule'}
+              {soon ? t('home.arrivingSoon') : t('home.onSchedule')}
             </Text>
           </View>
         </View>
@@ -222,8 +226,8 @@ function BusCard({ item }: { item: Departure }) {
           <View style={styles.flex}>
             <RouteLine from={item.from.name} to={item.to.name} size={17} />
             <Text variant="caption" color={colors.textSecondary} numberOfLines={1}>
-              Via {item.route.via}
-              {item.from.bay ? ` • ${item.from.bay}` : ''}
+              {t('transit.via', { via: item.route.via })}
+              {bay ? ` • ${bay}` : ''}
             </Text>
           </View>
           <View style={styles.fare}>
@@ -235,12 +239,12 @@ function BusCard({ item }: { item: Departure }) {
         </View>
         <View style={styles.eta}>
           <Icon name="clock" size={16} color={colors.forest900} />
-          <Text variant="captionStrong">{item.minutesAway <= 0 ? 'Departing now' : `Arriving in ${item.minutesAway} min`}</Text>
-          <Text variant="caption" color={colors.textSecondary} style={styles.flex}>
-            • {item.stopsAway === 0 ? 'at the first stop' : `${item.stopsAway} stop${item.stopsAway === 1 ? '' : 's'} away`}
+          <Text variant="captionStrong">{item.minutesAway <= 0 ? t('home.departingNow') : t('home.arrivingIn', { count: item.minutesAway })}</Text>
+          <Text variant="caption" color={colors.textSecondary} style={styles.flex} numberOfLines={1}>
+            • {item.stopsAway === 0 ? t('home.atFirstStop') : t('home.stopsAway', { count: item.stopsAway })}
           </Text>
           <Icon name="users" size={14} color={colors.forest900} />
-          <Text variant="captionStrong">{item.loadPercent}% full</Text>
+          <Text variant="captionStrong">{t('home.full', { count: item.loadPercent })}</Text>
         </View>
         <LoadBar percent={item.loadPercent} />
       </Card>
@@ -263,7 +267,7 @@ const styles = StyleSheet.create({
   avatar: { width: 40, height: 40, borderRadius: 20, backgroundColor: colors.forest900, alignItems: 'center', justifyContent: 'center' },
   avatarText: { fontFamily: fonts.heading, color: colors.mint, fontSize: 14 },
   greet: { gap: 4, marginTop: 4 },
-  greetTop: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
+  greetTop: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 8 },
   search: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -280,11 +284,12 @@ const styles = StyleSheet.create({
   tripIcon: { width: 40, height: 40, borderRadius: 20, backgroundColor: colors.mint, alignItems: 'center', justifyContent: 'center' },
   quick: { flexDirection: 'row', gap: 10 },
   quickCard: { flex: 1, backgroundColor: colors.card, borderRadius: radius.xl, paddingVertical: 14, paddingHorizontal: 6, alignItems: 'center', gap: 4, ...shadow.card },
+  quickTitle: { fontSize: 14, lineHeight: 18 },
   quickIcon: { width: 46, height: 46, borderRadius: 23, backgroundColor: colors.mint100, alignItems: 'center', justifyContent: 'center', marginBottom: 4 },
   banner: { height: 128, borderRadius: radius.xl, overflow: 'hidden', padding: 16, justifyContent: 'center', gap: 2 },
   bannerTitle: { fontFamily: fonts.display, fontSize: 22, color: '#FFFFFF' },
   sectionHead: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: 4 },
-  sectionTitle: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  sectionTitle: { flexDirection: 'row', alignItems: 'center', gap: 8, flexShrink: 1 },
   viewAll: { flexDirection: 'row', alignItems: 'center', gap: 4 },
   atStop: { marginTop: -10 },
   cards: { gap: 12 },

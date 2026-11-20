@@ -19,12 +19,25 @@ export class ApiError extends Error {
 let authToken: string | null = null;
 let onUnauthorized: (() => void) | null = null;
 
+/** Set by the i18n provider: the language sent to the API and the app's own network messages. */
+let language = 'en';
+let messages = {
+  cantReach: "Can't reach LINE-UP. Check your internet connection and try again.",
+  serverError: 'Something went wrong on our side. Try again in a moment.',
+  requestFailed: 'Request failed.',
+};
+
 export function setAuthToken(token: string | null) {
   authToken = token;
 }
 
 export function setUnauthorizedHandler(handler: (() => void) | null) {
   onUnauthorized = handler;
+}
+
+export function setApiLanguage(lang: string, translated: typeof messages) {
+  language = lang;
+  messages = translated;
 }
 
 function messageFrom(data: unknown, status: number): string {
@@ -34,7 +47,7 @@ function messageFrom(data: unknown, status: number): string {
     return message.map((m) => String(m).replace(/^[\w.]+: /, '')).join('\n');
   }
   if (typeof message === 'string') return message;
-  return status >= 500 ? 'Something went wrong on our side. Try again in a moment.' : 'Request failed.';
+  return status >= 500 ? messages.serverError : messages.requestFailed;
 }
 
 export async function api<T>(
@@ -47,13 +60,15 @@ export async function api<T>(
       method: options.method ?? 'GET',
       headers: {
         Accept: 'application/json',
+        // The API answers errors and notifications in this language.
+        'Accept-Language': language,
         ...(options.body !== undefined ? { 'Content-Type': 'application/json' } : {}),
         ...(authToken ? { Authorization: `Bearer ${authToken}` } : {}),
       },
       body: options.body !== undefined ? JSON.stringify(options.body) : undefined,
     });
   } catch {
-    throw new ApiError("Can't reach LINE-UP. Check your internet connection and try again.", 0, null);
+    throw new ApiError(messages.cantReach, 0, null);
   }
 
   const data = await response.json().catch(() => null);

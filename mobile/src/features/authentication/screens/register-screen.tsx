@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Text } from '@/components/ui/text';
 import { TextField } from '@/components/ui/text-field';
 import { colors } from '@/constants/theme';
+import { useI18n } from '@/i18n';
 import { api, ApiError } from '@/lib/api';
 import type { OtpIssued } from '@/lib/types';
 
@@ -13,6 +14,7 @@ import { AuthFrame, AuthTitle, FooterLink, PhoneField, setPendingDemoCode, toE16
 
 /** Design 02-01. */
 export default function RegisterScreen() {
+  const { t, lang } = useI18n();
   const [fullName, setFullName] = useState('');
   const [phone, setPhone] = useState('');
   const [password, setPassword] = useState('');
@@ -21,11 +23,9 @@ export default function RegisterScreen() {
 
   const submit = async () => {
     const next: typeof errors = {};
-    if (fullName.trim().length < 2) next.fullName = 'Enter your full name';
-    if (phone.replace(/\D/g, '').length < 9) next.phone = 'Enter your mobile number';
-    if (password.length < 8 || !/[A-Za-z]/.test(password) || !/\d/.test(password)) {
-      next.password = 'Use at least 8 characters with a letter and a number';
-    }
+    if (fullName.trim().length < 2) next.fullName = t('auth.errName');
+    if (phone.replace(/\D/g, '').length < 9) next.phone = t('auth.errPhone');
+    if (password.length < 8 || !/[A-Za-z]/.test(password) || !/\d/.test(password)) next.password = t('auth.errPassword');
     setErrors(next);
     if (Object.keys(next).length) return;
 
@@ -33,35 +33,36 @@ export default function RegisterScreen() {
     try {
       const otp = await api<OtpIssued>('/auth/register', {
         method: 'POST',
-        body: { fullName: fullName.trim(), phone: toE164(phone), password },
+        // The language chosen so far becomes the account's language.
+        body: { fullName: fullName.trim(), phone: toE164(phone), password, language: lang },
       });
       setPendingDemoCode(otp.demoCode);
       router.push({ pathname: '/verify', params: { phone: otp.phone, purpose: 'register' } });
     } catch (e) {
-      setErrors({ form: e instanceof ApiError ? e.message : 'Could not create your account.' });
+      setErrors({ form: e instanceof ApiError ? e.message : t('auth.couldNotCreate') });
     } finally {
       setBusy(false);
     }
   };
 
   return (
-    <AuthFrame footer={<FooterLink prompt="Already have an account?" action="Log In" onPress={() => router.replace('/login')} />}>
-      <AuthTitle title="Create Account" subtitle="Use your phone number to get started." />
+    <AuthFrame footer={<FooterLink prompt={t('auth.haveAccount')} action={t('auth.logIn')} onPress={() => router.replace('/login')} />}>
+      <AuthTitle title={t('auth.createTitle')} subtitle={t('auth.createSubtitle')} />
       <TextField
-        label="Full Name"
+        label={t('auth.fullName')}
         value={fullName}
         onChangeText={setFullName}
-        placeholder="e.g. Keza Aline"
+        placeholder={t('auth.fullNamePlaceholder')}
         autoCapitalize="words"
         autoComplete="name"
         error={errors.fullName}
       />
       <PhoneField value={phone} onChangeText={setPhone} error={errors.phone} />
       <TextField
-        label="Password"
+        label={t('auth.password')}
         value={password}
         onChangeText={setPassword}
-        placeholder="Create a strong password"
+        placeholder={t('auth.passwordPlaceholder')}
         password
         autoComplete="new-password"
         error={errors.password}
@@ -71,10 +72,10 @@ export default function RegisterScreen() {
           {errors.form}
         </Text>
       )}
-      <Button label="Continue" onPress={submit} loading={busy} style={styles.cta} />
+      <Button label={t('auth.continue')} onPress={submit} loading={busy} style={styles.cta} />
       <View>
         <Text variant="caption" color={colors.muted} align="center">
-          By continuing, you agree to our Terms and Privacy Policy.
+          {t('auth.terms')}
         </Text>
       </View>
     </AuthFrame>
