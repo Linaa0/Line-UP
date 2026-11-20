@@ -18,7 +18,7 @@ import { useAuth } from '@/lib/auth';
 import type { Departure, QueueEntry, Stop } from '@/lib/types';
 import { firstName, formatRwf, greeting, initials, KIND_LABEL, payLabel } from '@/utils/format';
 
-const skyline = require('@/assets/images/illustrations/kigali-skyline.png');
+const city = require('@/assets/images/photos/kigali-city.png');
 
 /** Design 03-01. */
 export default function HomeScreen() {
@@ -132,7 +132,7 @@ export default function HomeScreen() {
 
         {/* Banner */}
         <Pressable onPress={() => router.push('/live-map')} style={styles.banner}>
-          <Image source={skyline} style={StyleSheet.absoluteFill} contentFit="cover" />
+          <Image source={city} style={StyleSheet.absoluteFill} contentFit="cover" contentPosition="center" />
           <LinearGradient colors={['rgba(0,37,19,0.92)', 'rgba(0,37,19,0.35)']} start={{ x: 0, y: 0.5 }} end={{ x: 1, y: 0.5 }} style={StyleSheet.absoluteFill} />
           <Text variant="label" color={colors.mint}>
             Kigali smart urban hub
