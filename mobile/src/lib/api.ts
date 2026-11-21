@@ -1,5 +1,25 @@
-/** Base URL of the Line-Up API. See mobile/.env.example for phone/emulator values. */
-export const API_URL = (process.env.EXPO_PUBLIC_API_URL ?? 'http://localhost:4000/api/v1').replace(/\/$/, '');
+import Constants from 'expo-constants';
+import { Platform } from 'react-native';
+
+/**
+ * Where the API runs during development, worked out automatically so it keeps
+ * working when the computer's Wi-Fi address changes:
+ * - web preview: the same host as the page (localhost or the LAN address);
+ * - phone / emulator: the computer Expo is serving the app from (e.g. 10.100.21.17).
+ */
+function developmentApiUrl(): string {
+  if (Platform.OS === 'web' && typeof window !== 'undefined') {
+    return `http://${window.location.hostname}:4000/api/v1`;
+  }
+  const expoHost = Constants.expoConfig?.hostUri?.split(':')[0];
+  return `http://${expoHost || 'localhost'}:4000/api/v1`;
+}
+
+/**
+ * Base URL of the Line-Up API. Set EXPO_PUBLIC_API_URL only to point at a
+ * fixed server (e.g. the hosted API); otherwise it is detected (see above).
+ */
+export const API_URL = (process.env.EXPO_PUBLIC_API_URL || developmentApiUrl()).replace(/\/$/, '');
 
 export class ApiError extends Error {
   constructor(
