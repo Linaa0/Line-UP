@@ -23,7 +23,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState<User | null>(null);
   const [onboarded, setOnboarded] = useState(false);
-  const { setLang } = useI18n();
+  const { lang, setLang, chosen } = useI18n();
 
   const signOut = useCallback(async () => {
     setAuthToken(null);
@@ -61,8 +61,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         await storage.set(KEYS.onboarded, '1');
         setOnboarded(true);
         setUser(session.user);
-        // The account remembers the language; use it on this device too.
-        setLang(session.user.preferences.language);
+        const accountLang = session.user.preferences.language;
+        if (!chosen) {
+          // Nothing picked on this device yet (e.g. a new phone): use the account's language.
+          setLang(accountLang);
+        } else if (accountLang !== lang) {
+          // The language picked on this device wins; remember it on the account too.
+          api<User>('/users/me/preferences', { method: 'PATCH', body: { language: lang } })
+            .then(setUser)
+            .catch(() => {
+              // The app stays in the chosen language; the account is updated on the next change.
+            });
+        }
       },
       signOut,
       async refreshUser() {
@@ -74,7 +84,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setOnboarded(true);
       },
     }),
-    [loading, user, onboarded, signOut, setLang],
+    [loading, user, onboarded, signOut, setLang, lang, chosen],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

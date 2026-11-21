@@ -75,6 +75,8 @@ type I18nState = {
   lang: Lang;
   /** Changes the app language and remembers it on this device. */
   setLang: (lang: Lang) => void;
+  /** True once someone picked a language on this device (now or on an earlier visit). */
+  chosen: boolean;
   t: (key: MessageKey, params?: Params) => string;
 };
 
@@ -82,10 +84,14 @@ const I18nContext = createContext<I18nState | null>(null);
 
 export function I18nProvider({ children }: { children: ReactNode }) {
   const [lang, setLangState] = useState<Lang>(deviceLanguage);
+  const [chosen, setChosen] = useState(false);
 
   useEffect(() => {
     void storage.get(STORAGE_KEY).then((saved) => {
-      if (saved && saved in DICTIONARIES) setLangState(saved as Lang);
+      if (saved && saved in DICTIONARIES) {
+        setLangState(saved as Lang);
+        setChosen(true);
+      }
     });
   }, []);
 
@@ -96,12 +102,13 @@ export function I18nProvider({ children }: { children: ReactNode }) {
   const setLang = useCallback((next: Lang) => {
     syncApi(next);
     setLangState(next);
+    setChosen(true);
     void storage.set(STORAGE_KEY, next);
   }, []);
 
   const value = useMemo<I18nState>(
-    () => ({ lang, setLang, t: (key, params) => translate(lang, key, params) }),
-    [lang, setLang],
+    () => ({ lang, setLang, chosen, t: (key, params) => translate(lang, key, params) }),
+    [lang, setLang, chosen],
   );
 
   return <I18nContext.Provider value={value}>{children}</I18nContext.Provider>;
