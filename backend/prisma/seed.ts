@@ -9,11 +9,12 @@
 import { existsSync } from 'node:fs';
 import { PrismaPg } from '@prisma/adapter-pg';
 import { Direction, PrismaClient, RouteKind } from '../src/generated/prisma/client.js';
+import { pgSsl } from '../src/database/pg-ssl.js';
 
 if (!process.env.DATABASE_URL && existsSync('.env')) process.loadEnvFile('.env');
 const connectionString = process.env.DATABASE_URL;
 if (!connectionString) throw new Error('DATABASE_URL is not set');
-const prisma = new PrismaClient({ adapter: new PrismaPg({ connectionString }) });
+const prisma = new PrismaClient({ adapter: new PrismaPg({ connectionString, ssl: pgSsl(process.env.DATABASE_SSL) }) });
 
 const stops = [
   { name: 'Nyabugogo Bus Park', area: 'Nyarugenge', lat: -1.9393, lng: 30.0447 },

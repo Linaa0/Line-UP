@@ -18,6 +18,8 @@ export const envSchema = z.object({
         value.startsWith('postgresql://') || value.startsWith('postgres://'),
       'DATABASE_URL must be a PostgreSQL connection string',
     ),
+  /** "true" or "no-verify" for hosted databases that require SSL (see src/database/pg-ssl.ts). */
+  DATABASE_SSL: z.enum(['false', 'true', 'no-verify']).default('false'),
   CORS_ORIGIN: z
     .string()
     .default('http://localhost:3003')
