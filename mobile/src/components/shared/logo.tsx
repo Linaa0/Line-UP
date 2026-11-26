@@ -1,20 +1,41 @@
+import { useId } from 'react';
 import { StyleSheet, View } from 'react-native';
-import Svg, { Circle, Rect } from 'react-native-svg';
+import Svg, { Circle, Defs, G, Mask, Rect } from 'react-native-svg';
 
 import { Text } from '@/components/ui/text';
 import { colors, fonts } from '@/constants/theme';
 
-/** The LINE-UP bus mark (front of a bus), as on the splash and welcome screens. */
+/**
+ * The LINE-UP bus mark (front of a bus), as on the splash and welcome screens.
+ * `cutout="transparent"` makes the windows and lights see-through (for gradients).
+ */
 export function BusMark({ size = 24, color = '#FFFFFF', cutout = colors.forest600 }: { size?: number; color?: string; cutout?: string }) {
+  const maskId = `busmark${useId().replace(/[^a-zA-Z0-9]/g, '')}`;
+  const holes = (fill: string) => (
+    <>
+      <Rect x={30} y={14} width={40} height={5} rx={2.5} fill={fill} />
+      <Rect x={28} y={25} width={44} height={23} rx={4} fill={fill} />
+      <Circle cx={36.5} cy={62} r={6.5} fill={fill} />
+      <Circle cx={63.5} cy={62} r={6.5} fill={fill} />
+    </>
+  );
+  const see = cutout === 'transparent';
   return (
     <Svg width={size} height={size} viewBox="0 0 100 100">
-      <Rect x={20} y={8} width={60} height={72} rx={17} fill={color} />
-      <Rect x={30} y={14} width={40} height={5} rx={2.5} fill={cutout} />
-      <Rect x={28} y={25} width={44} height={23} rx={4} fill={cutout} />
-      <Circle cx={36.5} cy={62} r={6.5} fill={cutout} />
-      <Circle cx={63.5} cy={62} r={6.5} fill={cutout} />
-      <Rect x={25} y={74} width={13} height={16} rx={4} fill={color} />
-      <Rect x={62} y={74} width={13} height={16} rx={4} fill={color} />
+      {see && (
+        <Defs>
+          <Mask id={maskId} x={0} y={0} width={100} height={100} maskUnits="userSpaceOnUse">
+            <Rect x={0} y={0} width={100} height={100} fill="#FFFFFF" />
+            {holes('#000000')}
+          </Mask>
+        </Defs>
+      )}
+      <G mask={see ? `url(#${maskId})` : undefined}>
+        <Rect x={20} y={8} width={60} height={72} rx={17} fill={color} />
+        <Rect x={25} y={74} width={13} height={16} rx={4} fill={color} />
+        <Rect x={62} y={74} width={13} height={16} rx={4} fill={color} />
+      </G>
+      {!see && holes(cutout)}
     </Svg>
   );
 }
